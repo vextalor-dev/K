@@ -91,10 +91,12 @@
 
 .row:hover .row-arrow {
   opacity: 1;
+  pointer-events: auto;
 }
 
-.row:hover .row-arrow.disabled {
-  opacity: 0;
+.row-arrow.disabled {
+  opacity: 0 !important;
+  pointer-events: none;
 }
 
 /* skeleton row */

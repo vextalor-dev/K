@@ -28,6 +28,7 @@ let mobileOpen = false;
 let searchOpen = false;
 let searchInput = null;
 let searchDrop = null;
+let searchBox = null;
 
 export function renderNav() {
   const root = navRoot();
@@ -101,7 +102,7 @@ function bindScroll() {
 function bindSearch() {
   const input = searchInput;
   const drop = searchDrop;
-  const box = $('.search-box');
+  const box = searchBox = $('.search-box');
   const btn = $('.nav-search-btn');
   const clear = $('.search-clear');
 
@@ -128,30 +129,34 @@ function bindSearch() {
   });
 
   document.addEventListener('click', (e) => {
-    if (!box.contains(e.target) && searchOpen) closeSearch();
+    if (!box.contains(e.target) && (searchOpen || searchDrop.classList.contains('open'))) closeSearch();
   });
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && searchOpen) closeSearch();
   });
+}
 
-  function closeSearch() {
-    searchOpen = false;
-    box.classList.remove('open');
-    input.value = '';
-    drop.classList.remove('open');
-    updateSearchClear();
-  }
+function closeSearch() {
+  searchOpen = false;
+  if (!searchBox) return;
+  searchBox.classList.remove('open');
+  searchInput.value = '';
+  searchDrop.classList.remove('open');
+  updateSearchClear();
+}
 
-  function updateSearchClear() {
-    box.classList.toggle('has-text', input.value.length > 0);
-  }
+function updateSearchClear() {
+  searchBox.classList.toggle('has-text', searchInput.value.length > 0);
 }
 
 const doNavSearch = debounce(async (q) => {
   if (!q || q.length < 2) { searchDrop.classList.remove('open'); return; }
+  const mine = q;
+  const wasOpen = searchOpen;
   try {
     const data = await api.searchMulti(q);
+    if (!searchInput || searchInput.value.trim() !== mine || !wasOpen) return;
     const results = (data.results || []).filter(r => r.media_type !== 'person' && r.poster_path).slice(0, 6);
     if (!results.length) { searchDrop.innerHTML = '<div class="drop-empty">No results found</div>'; }
     else {
@@ -175,7 +180,7 @@ const doNavSearch = debounce(async (q) => {
         closeSearch();
       });
     });
-  } catch { searchDrop.innerHTML = '<div class="drop-empty">Something went wrong</div>'; searchDrop.classList.add('open'); }
+  } catch { if (searchInput && searchInput.value.trim() === mine && searchOpen) { searchDrop.innerHTML = '<div class="drop-empty">Something went wrong</div>'; searchDrop.classList.add('open'); } }
 }, 220);
 
 function bindBrowse() {
@@ -268,11 +273,11 @@ export function renderDock() {
 }
 
 export function setNavActive(route) {
-  const hash = route ? `#/${route}` : '#/';
+  const hash = route ? `#/${route}` : null;
   $$('.nav-link', navRoot()).forEach(a => {
-    a.classList.toggle('active', a.dataset.hash === hash);
+    a.classList.toggle('active', !!hash && a.dataset.hash === hash);
   });
   $$('.dock-item').forEach(a => {
-    a.classList.toggle('active', a.dataset.hash === hash);
+    a.classList.toggle('active', !!hash && a.dataset.hash === hash);
   });
 }

@@ -5,8 +5,9 @@
 
 import { $, $$, esc, icon, debounce, titleOf, mediaTypeOf, yearOf } from './utils.js';
 import * as api from './api.js';
-import { makeCard } from './card.js';
 import { openDetail } from './card.js';
+
+let reqSeq = 0;
 
 export function renderSearch(root, query = '') {
   root.innerHTML = `
@@ -25,7 +26,9 @@ export function renderSearch(root, query = '') {
   const content = $('#search-content', root);
   const sectionTitle = $('#search-section-title', root);
 
-  clearBtn.addEventListener('click', () => { input.value = ''; input.focus(); handleSearch(''); });
+  clearBtn.style.display = (input.value || query) ? '' : 'none';
+
+  clearBtn.addEventListener('click', () => { input.value = ''; clearBtn.style.display = 'none'; input.focus(); handleSearch(''); });
 
   input.addEventListener('input', () => {
     clearBtn.style.display = input.value ? '' : 'none';
@@ -46,11 +49,13 @@ export function renderSearch(root, query = '') {
 }
 
 async function loadTopSearches(content, sectionTitle) {
+  const seq = ++reqSeq;
   sectionTitle.textContent = 'Top Searches';
   content.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
 
   try {
     const data = await api.trending('all', 'week');
+    if (seq !== reqSeq) return;
     const items = (data.results || []).filter(i => i.poster_path || i.backdrop_path).slice(0, 12);
 
     content.innerHTML = '<div class="top-searches"></div>';
@@ -85,11 +90,13 @@ async function loadTopSearches(content, sectionTitle) {
       container.appendChild(row);
     });
   } catch {
+    if (seq !== reqSeq) return;
     content.innerHTML = '<div class="search-none">Failed to load trending titles.</div>';
   }
 }
 
 const doSearch = debounce(async (root, content, sectionTitle, q) => {
+  const seq = ++reqSeq;
   if (!q || q.length < 2) {
     sectionTitle.textContent = '';
     loadTopSearches(content, sectionTitle);
@@ -103,9 +110,11 @@ const doSearch = debounce(async (root, content, sectionTitle, q) => {
 
   try {
     const data = await api.searchMulti(q);
+    if (seq !== reqSeq) return;
     const results = (data.results || []).filter(r => r.media_type !== 'person' && (r.poster_path || r.backdrop_path));
 
     if (!results.length) {
+      if (seq !== reqSeq) return;
       content.innerHTML = `<div class="search-none">No results found for "${esc(q)}"</div>`;
       return;
     }
@@ -140,6 +149,7 @@ const doSearch = debounce(async (root, content, sectionTitle, q) => {
       grid.appendChild(card);
     });
   } catch {
+    if (seq !== reqSeq) return;
     content.innerHTML = '<div class="search-none">Something went wrong. Try again.</div>';
   }
 }, 300);

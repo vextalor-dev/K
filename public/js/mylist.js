@@ -51,6 +51,15 @@ export const setReaction = (id, type, value) => {
   save(REACTIONS_KEY, all);
 };
 
+export const likedItems = () =>
+  Object.entries(load(REACTIONS_KEY, {}))
+    .filter(([, v]) => v === 'like')
+    .map(([k]) => {
+      const [type, id] = k.split(':');
+      return { type, id: Number(id) };
+    })
+    .filter((x) => x.type && (x.type === 'movie' || x.type === 'tv') && Number.isInteger(x.id) && x.id > 0);
+
 // Notify Me toggles for New & Popular
 const NOTIFY_KEY = 'nkx-notify';
 

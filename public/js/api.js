@@ -15,16 +15,15 @@ export async function fetchTMDB(path, params = {}) {
   if (hit && hit.exp > Date.now()) return hit.data;
 
   let data;
+  let res;
   try {
-    const res = await fetch(`/api/tmdb/${path}?${qs.toString()}`);
-    if (!res.ok) throw new Error(`TMDB request failed (${res.status})`);
-    data = await res.json();
-  } catch (err) {
+    res = await fetch(`/api/tmdb/${path}?${qs.toString()}`);
+  } catch {
     // one client-side retry for transient network blips
-    const res = await fetch(`/api/tmdb/${path}?${qs.toString()}`);
-    if (!res.ok) throw new Error(`TMDB request failed (${res.status})`);
-    data = await res.json();
+    res = await fetch(`/api/tmdb/${path}?${qs.toString()}`);
   }
+  if (!res.ok) throw new Error(`TMDB request failed (${res.status})`);
+  data = await res.json();
 
   cache.set(key, { exp: Date.now() + TTL, data });
   return data;

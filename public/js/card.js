@@ -14,7 +14,10 @@ import { inList, toggle as toggleList, getReaction, setReaction } from './mylist
 const detailCache = new Map();
 export const detailFor = (type, id) => {
   const key = `${type}:${id}`;
-  if (!detailCache.has(key)) detailCache.set(key, api.details(type, id));
+  if (!detailCache.has(key)) {
+    const p = api.details(type, id).catch((err) => { detailCache.delete(key); throw err; });
+    detailCache.set(key, p);
+  }
   return detailCache.get(key);
 };
 
@@ -36,7 +39,9 @@ export function makeCard(item, opts = {}) {
   const id = item.id;
   const title = titleOf(item);
   const poster = opts.poster || posterOf(item);
-  const progress = opts.progress != null ? clamp(opts.progress, 0, 1) : null;
+  const progress = opts.progress != null
+    ? clamp(opts.progress, 0, 1)
+    : (item.progress != null ? clamp(item.progress, 0, 1) : null);
   const lazy = opts.lazy !== false;
   const rank = opts.rank != null ? Number(opts.rank) : null;
 
@@ -52,7 +57,7 @@ export function makeCard(item, opts = {}) {
     ? `<img class="card-poster" src="${poster}" alt="${esc(title)}" loading="${lazy ? 'lazy' : 'eager'}" referrerpolicy="no-referrer">`
     : '<div class="card-fallback"></div>';
 
-  const rating = matchPct(item.vote_average);
+  const rating = item.vote_average > 0 ? matchPct(item.vote_average) : null;
   const year = yearOf(item);
 
   el.innerHTML = `
@@ -71,7 +76,7 @@ export function makeCard(item, opts = {}) {
     <div class="card-meta">
       <div class="card-title">${esc(title)}</div>
       <div class="card-sub">
-        <span class="card-star">${icon('star')} ${rating}%</span>
+        ${rating != null ? `<span class="card-star">${icon('star')} ${rating}%</span>` : ''}
         ${year ? `<span>${year}</span>` : ''}
       </div>
     </div>

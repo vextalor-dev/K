@@ -116,6 +116,10 @@ h1, h2, h3, h4, p { margin: 0; }
   box-shadow: 0 0 30px var(--accent-glow-strong), 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
+.font-medium {
+  font-weight: 500;
+}
+
 /* ---- pill buttons ---- */
 .btn {
   display: inline-flex;
@@ -146,7 +150,7 @@ h1, h2, h3, h4, p { margin: 0; }
 
 .btn-play:hover {
   background: #fff;
-  box-shadow: var(--shadow-glow-strong);
+  box-shadow: 0 0 30px var(--accent-glow-strong), 0 8px 24px rgba(0, 0, 0, 0.5);
   transform: scale(1.03);
 }
 
@@ -215,7 +219,7 @@ h1, h2, h3, h4, p { margin: 0; }
 
 .btn-play-sm:hover {
   background: #fff;
-  box-shadow: var(--shadow-glow);
+  box-shadow: 0 0 20px var(--accent-glow), 0 4px 14px rgba(0, 0, 0, 0.3);
   transform: scale(1.08);
 }
 
@@ -314,6 +318,9 @@ h1, h2, h3, h4, p { margin: 0; }
   flex: 0 0 180px;
   aspect-ratio: 2 / 3;
   border-radius: 10px;
+  background: linear-gradient(90deg, var(--surface-1) 0%, var(--surface-2) 50%, var(--surface-1) 100%);
+  background-size: 200% 100%;
+  animation: k-shimmer 1.5s infinite;
 }
 
 @media (max-width: 740px) {

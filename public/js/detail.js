@@ -3,7 +3,8 @@
 // Title detail page (full-page, not modal)
 // ============================================================
 
-import { $, esc, icon, matchPct, yearOf, titleOf, mediaTypeOf, hms, formatDate } from './utils.js';
+import { $, $$, esc, icon, matchPct, yearOf, titleOf, runtimeText, readProgress } from './utils.js';
+import { trailerUrl } from './config.js';
 import * as api from './api.js';
 import { detailFor, openWatch } from './card.js';
 import { inList, toggle as toggleList, getReaction, setReaction } from './mylist.js';
@@ -12,23 +13,35 @@ import { buildRow } from './rows.js';
 export async function renderDetail(root, type, id) {
   root.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
 
+  const expectedHash = `#/title:${type}:${id}`;
+  const stale = () => location.hash !== expectedHash || !document.body.contains(root);
+
   try {
-    const [det, cred, simData] = await Promise.all([
+    const [det, cred, simData, tKey] = await Promise.all([
       detailFor(type, id),
       api.credits(type, id).catch(() => ({ cast: [] })),
       api.similar(type, id).catch(() => ({ results: [] })),
+      api.trailerKey(type, id).catch(() => null),
     ]);
 
+    if (stale()) return;
+
     const genres = await api.loadGenres();
+    if (stale()) return;
+
     const genreNames = api.genreNames(det.genres || [], genres);
     const title = titleOf(det);
     const year = yearOf(det);
     const rating = matchPct(det.vote_average);
-    const runtime = hms(det.runtime * 60);
+    const runtime = type === 'tv'
+      ? (det.episode_run_time?.[0] ? runtimeText({ runtime: det.episode_run_time[0] }) : null)
+      : runtimeText(det);
     const typeLabel = type === 'tv' ? 'TV Show' : 'Movie';
 
+    document.title = `${title}${year ? ` (${year})` : ''} · K`;
+
     root.innerHTML = `
-      <div class="page-hero" style="background-image:url(https://image.tmdb.org/t/p/original${det.backdrop_path || ''})">
+      <div class="page-hero" style="${det.backdrop_path ? `background-image:url(https://image.tmdb.org/t/p/original${det.backdrop_path})` : ''}">
         <div class="page-hero-inner layout-container">
           <button class="detail-back btn btn-glass">${icon('back')} Back</button>
           <div class="detail-poster-area">
@@ -45,6 +58,7 @@ export async function renderDetail(root, type, id) {
             ${genreNames.length ? `<div class="detail-genres">${genreNames.map(g => `<span class="detail-genre">${esc(g)}</span>`).join('')}</div>` : ''}
             <div class="detail-buttons">
               <button class="btn btn-play detail-play">${icon('play')} Play</button>
+              ${tKey ? `<button class="btn btn-glass detail-trailer">${icon('play')} Trailer</button>` : ''}
               <button class="btn btn-icon detail-list" aria-label="My List"></button>
               <button class="btn btn-icon detail-like" aria-label="Like">${icon('like')}</button>
               <button class="btn btn-icon detail-dislike" aria-label="Dislike">${icon('dislike')}</button>
@@ -54,6 +68,7 @@ export async function renderDetail(root, type, id) {
         </div>
       </div>
       <div class="layout-container">
+        ${type === 'tv' && det.number_of_seasons ? '<div class="detail-seasons"></div>' : ''}
         ${(cred.cast || []).length ? `
           <div class="detail-section">
             <h2 class="detail-section-title heading-trail">Cast</h2>
@@ -75,9 +90,13 @@ export async function renderDetail(root, type, id) {
     // bind actions
     $('.detail-back', root).addEventListener('click', () => window.history.back());
 
+    const trailerBtn = $('.detail-trailer', root);
+    if (trailerBtn) trailerBtn.addEventListener('click', () => openTrailer(tKey));
+
     const playFn = () => {
       if (type === 'tv') {
-        openWatch(type, id, det.last_episode_to_air?.season_number || 1, det.last_episode_to_air?.episode_number || 1);
+        const rec = readProgress(type, id);
+        openWatch('tv', id, rec?.season || 1, rec?.episode || 1);
       } else {
         openWatch(type, id);
       }
@@ -101,6 +120,12 @@ export async function renderDetail(root, type, id) {
       buildRow(simSection, { title: 'More Like This', items: sims });
     }
 
+    // TV episode picker
+    if (type === 'tv' && det.number_of_seasons) {
+      const seasonsEl = $('.detail-seasons', root);
+      if (seasonsEl) loadSeasons(seasonsEl, det);
+    }
+
   } catch {
     root.innerHTML = `
       <div class="error-screen">
@@ -110,6 +135,101 @@ export async function renderDetail(root, type, id) {
       </div>
     `;
   }
+}
+
+async function loadSeasons(container, det) {
+  const numSeasons = det.number_of_seasons || 0;
+  if (numSeasons <= 0) return;
+
+  const rec = readProgress('tv', det.id);
+  const startSeason = rec?.season || 1;
+
+  container.innerHTML = `
+    <div class="detail-section">
+      <h2 class="detail-section-title heading-trail">Episodes</h2>
+      <div class="season-select-wrap">
+        <select class="season-select" aria-label="Season">
+          ${Array.from({ length: numSeasons }, (_, i) => `<option value="${i + 1}" ${i + 1 === startSeason ? 'selected' : ''}>Season ${i + 1}</option>`).join('')}
+        </select>
+      </div>
+      <div class="episode-list"></div>
+    </div>
+  `;
+
+  const sel = $('.season-select', container);
+  const list = $('.episode-list', container);
+  let pending = 0;
+
+  sel.addEventListener('change', () => {
+    const seq = ++pending;
+    loadEpisodes(list, det.id, Number(sel.value), () => seq === pending);
+  });
+  loadEpisodes(list, det.id, startSeason, () => true);
+}
+
+async function loadEpisodes(listEl, tvId, seasonNum, isCurrent) {
+  listEl.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+  try {
+    const data = await api.seasonInfo(tvId, seasonNum);
+    if (!isCurrent()) return;
+    const eps = data.episodes || [];
+    listEl.innerHTML = eps.map(ep => `
+      <div class="episode-row" data-season="${seasonNum}" data-ep="${ep.episode_number}" tabindex="0">
+        <div class="ep-thumb">
+          ${ep.still_path ? `<img src="https://image.tmdb.org/t/p/w300${ep.still_path}" alt="" loading="lazy">` : '<div class="card-fallback"></div>'}
+          <div class="ep-play">${icon('play')}</div>
+        </div>
+        <div class="ep-info">
+          <div class="ep-head">
+            <span class="ep-num">${ep.episode_number}</span>
+            <span class="ep-name">${esc(ep.name || '')}</span>
+            ${ep.runtime ? `<span class="ep-runtime">${ep.runtime}m</span>` : ''}
+          </div>
+          <p class="ep-overview">${esc(ep.overview || '')}</p>
+        </div>
+      </div>
+    `).join('') || '<div class="episode-empty">No episodes available.</div>';
+
+    $$('.episode-row', listEl).forEach(row => {
+      const play = () => {
+        const s = Number(row.dataset.season);
+        const ep = Number(row.dataset.ep);
+        openWatch('tv', tvId, s, ep);
+      };
+      row.addEventListener('click', play);
+      row.addEventListener('keydown', (e) => { if (e.key === 'Enter') play(); });
+    });
+  } catch {
+    if (isCurrent()) listEl.innerHTML = '<div class="episode-empty">Failed to load episodes.</div>';
+  }
+}
+
+function openTrailer(key) {
+  const ov = document.createElement('div');
+  ov.className = 'modal-overlay';
+  ov.innerHTML = `
+    <div class="modal-panel" style="width:min(880px, 94vw)">
+      <button class="modal-close" aria-label="Close">${icon('close')}</button>
+      <div class="modal-media" style="aspect-ratio:16/9">
+        <iframe src="${trailerUrl(key)}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+      </div>
+    </div>
+  `;
+
+  const prevOverflow = document.body.style.overflow;
+  const cleanup = () => {
+    ov.remove();
+    document.body.style.overflow = prevOverflow;
+    window.removeEventListener('keydown', onKey);
+    window.removeEventListener('hashchange', cleanup);
+  };
+  const onKey = (e) => { if (e.key === 'Escape') cleanup(); };
+  ov.addEventListener('click', (e) => { if (e.target === ov) cleanup(); });
+  ov.querySelector('.modal-close').addEventListener('click', cleanup);
+  window.addEventListener('keydown', onKey);
+  window.addEventListener('hashchange', cleanup);
+  document.body.style.overflow = 'hidden';
+  document.body.appendChild(ov);
 }
 
 function refreshListBtn(btn, id, type) {

@@ -3,18 +3,18 @@
 // SPA router + home page + all route pages
 // ============================================================
 
-import { $, debounce } from './utils.js';
+import { $, debounce, esc, icon, dateBadge, titleOf, yearOf, mediaTypeOf } from './utils.js';
 import * as api from './api.js';
 import { ANIME_IDS, GENRES, LANGUAGES } from './config.js';
 import { renderNav, renderDock, setNavActive } from './nav.js';
 import { renderHero, destroy as destroyHero } from './hero.js';
 import { buildRow, buildApiRow, buildGrid, buildGridSkeleton } from './rows.js';
-import { makeCard, openDetail } from './card.js';
+import { makeGridCard, openDetail } from './card.js';
 import { renderSearch } from './search.js';
 import { renderFooter } from './footer.js';
 import { renderWatch, destroyWatch } from './watch.js';
 import { renderDetail } from './detail.js';
-import { getList } from './mylist.js';
+import { getList, likedItems, isNotified, toggleNotify } from './mylist.js';
 import { continueWatchingItems } from './utils.js';
 import { GENRE_MOODS } from './config.js';
 
@@ -68,40 +68,49 @@ async function route() {
   if (path === '' || path === '/') {
     currentRoute = 'home';
     setNavActive('/');
+    document.title = 'K · Watch Movies & TV Shows';
     await renderHome();
   } else if (path === 'mylist') {
     currentRoute = 'mylist';
     setNavActive('/mylist');
+    document.title = 'My List · K';
     renderMyList();
   } else if (path === 'search' || path.startsWith('search=')) {
     currentRoute = 'search';
     setNavActive('/search');
     const q = path.startsWith('search=') ? decodeURIComponent(path.slice(7)) : '';
+    document.title = q ? `Search: ${q} · K` : 'Search · K';
     renderSearch(appRoot(), q);
   } else if (path === 'new') {
     currentRoute = 'new';
     setNavActive('/new');
+    document.title = 'New & Popular · K';
     await renderNewPopular();
   } else if (path === 'languages') {
     currentRoute = 'languages';
     setNavActive('/languages');
+    document.title = 'Languages · K';
     await renderLanguages();
   } else if (path === 'kids') {
     currentRoute = 'kids';
     setNavActive('/kids');
     document.body.classList.add('kids-mode');
+    document.title = 'Kids · K';
     await renderKids();
   } else if (path === 'movies') {
     currentRoute = 'movies';
     setNavActive('/movies');
+    document.title = 'Movies · K';
     await renderMovies();
   } else if (path === 'tv') {
     currentRoute = 'tv';
     setNavActive('/tv');
+    document.title = 'TV Shows · K';
     await renderTV();
   } else if (path === 'anime') {
     currentRoute = 'anime';
     setNavActive('/anime');
+    document.title = 'Anime · K';
     await renderAnime();
   } else if (path.startsWith('title:')) {
     currentRoute = 'detail';
@@ -109,19 +118,28 @@ async function route() {
     const parts = path.slice(6).split(':');
     const type = parts[0] || 'movie';
     const id = Number(parts[1]);
-    if (id) await renderDetail(appRoot(), type, id);
+    if (Number.isInteger(id) && id > 0) {
+      await renderDetail(appRoot(), type, id);
+    } else {
+      showError('Invalid Title', 'The title you are looking for does not exist.');
+    }
   } else if (path.startsWith('browse=')) {
     currentRoute = 'browse';
     setNavActive('');
     const m = path.match(/^browse=(\d+)&title=(.*)$/);
-    if (m) await renderGenreBrowse(Number(m[1]), decodeURIComponent(m[2]));
+    if (m) {
+      document.title = `${decodeURIComponent(m[2])} · K`;
+      await renderGenreBrowse(Number(m[1]), decodeURIComponent(m[2]));
+    }
   } else if (path === 'latest') {
     currentRoute = 'latest';
     setNavActive('');
+    document.title = 'Latest · K';
     await renderLatest();
   } else {
     currentRoute = 'error';
     setNavActive('');
+    document.title = 'Page Not Found · K';
     showError('Page Not Found', 'The page you are looking for does not exist.');
   }
 
@@ -142,11 +160,25 @@ async function renderHome() {
   // Continue Watching
   const cwItems = continueWatchingItems();
   if (cwItems.length) {
-    buildRow(rowsContainer, { title: 'Continue Watching', items: cwItems.map(cw => ({
-      id: cw.id, title: cw.title, poster_path: cw.poster, backdrop_path: cw.backdrop,
-      vote_average: cw.vote || 0, release_date: cw.year || '',
-    })), opts: { progress: cwItems[0]?.progress || 0 } });
+    buildRow(rowsContainer, {
+      title: 'Continue Watching',
+      items: cwItems.map(cw => ({
+        type: cw.type,
+        id: cw.id,
+        title: cw.title,
+        name: cw.type === 'tv' ? cw.title : undefined,
+        poster_path: cw.poster,
+        backdrop_path: cw.backdrop,
+        vote_average: cw.vote,
+        release_date: cw.type === 'movie' ? cw.year : undefined,
+        first_air_date: cw.type === 'tv' ? cw.year : undefined,
+        progress: cw.progress,
+      })),
+    });
   }
+
+  // Because You Liked (from reactions)
+  buildLikedRow(rowsContainer);
 
   // Trending
   buildApiRow(rowsContainer, { title: 'Trending Now', promise: api.trending('all', 'week'), opts: { rank: true } });
@@ -261,10 +293,7 @@ function renderMyList() {
   const { page } = buildGrid(root, {
     title: 'My List',
     items,
-    renderItem: (item, i) => {
-      const el = makeCard(item, { type: item.type });
-      return el;
-    },
+    renderItem: (item) => makeGridCard(item, { onRemove: (el) => el.remove() }),
   });
 }
 
@@ -277,8 +306,77 @@ async function renderNewPopular() {
   const content = $('#np-content', root);
 
   buildApiRow(content, { title: 'Trending This Week', promise: api.trending('all', 'week'), opts: { rank: true } });
-  buildApiRow(content, { title: 'New on K', promise: api.movieList('upcoming') });
+  await renderNewReleases(content);
   buildApiRow(content, { title: 'Popular TV Shows', promise: api.tvList('popular') });
+}
+
+async function renderNewReleases(content) {
+  const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  try {
+    const data = await api.discover('movie', { 'release_date.gte': since, sort_by: 'release_date.desc', include_adult: 'false' });
+    const items = (data.results || []).filter(i => i.poster_path || i.backdrop_path).slice(0, 12);
+    if (!items.length) return;
+
+    const sec = document.createElement('section');
+    sec.className = 'np-section';
+    sec.innerHTML = '<h2 class="row-title heading-trail">New This Week</h2><div class="np-coming-grid"></div>';
+    content.appendChild(sec);
+    const grid = $('.np-coming-grid', sec);
+
+    items.forEach(item => {
+      const t = titleOf(item);
+      const badge = dateBadge(item.release_date);
+      const on = isNotified(item.id);
+      const el = document.createElement('div');
+      el.className = 'np-item';
+      el.tabIndex = 0;
+      el.innerHTML = `
+        ${badge ? `<div class="np-date-badge"><span class="np-dow">${badge.dow}</span><span class="np-day">${badge.day}</span></div>` : ''}
+        <div class="np-item-body">
+          <div class="np-item-title">${esc(t)}</div>
+          <div class="np-item-sub">${yearOf(item) ? `${yearOf(item)} · ` : ''}Movie</div>
+          <p class="np-item-desc">${esc(item.overview || '')}</p>
+          <button class="np-notify ${on ? 'notified' : ''}" aria-pressed="${on}">${icon('bell')} ${on ? 'Reminder Set' : 'Notify Me'}</button>
+        </div>
+      `;
+      const open = () => openDetail('movie', item.id);
+      el.addEventListener('click', (e) => { if (e.target.closest('.np-notify')) return; open(); });
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter') open(); });
+      const btn = $('.np-notify', el);
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleNotify(item.id);
+        const now = isNotified(item.id);
+        btn.classList.toggle('notified', now);
+        btn.setAttribute('aria-pressed', now);
+        btn.innerHTML = `${icon('bell')} ${now ? 'Reminder Set' : 'Notify Me'}`;
+      });
+      grid.appendChild(el);
+    });
+  } catch { /* row is optional */ }
+}
+
+async function buildLikedRow(rowsContainer) {
+  const liked = likedItems().slice(0, 3);
+  if (!liked.length) return;
+  try {
+    const lists = await Promise.all(liked.map(({ type, id }) =>
+      api.similar(type, id).catch(() => ({ results: [] }))
+    ));
+    const seen = new Set();
+    const items = [];
+    for (const list of lists) {
+      for (const r of (list.results || [])) {
+        const key = `${mediaTypeOf(r)}:${r.id}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        items.push(r);
+        if (items.length >= 10) break;
+      }
+      if (items.length >= 10) break;
+    }
+    if (items.length) buildRow(rowsContainer, { title: 'Because You Liked', items });
+  } catch { /* row is optional */ }
 }
 
 // ---------------------------------------------------------------
@@ -306,8 +404,9 @@ async function renderKids() {
   root.innerHTML = '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Kids</h1><div id="kids-content"></div></div></div>';
   const content = $('#kids-content', root);
 
-  buildApiRow(content, { title: 'Popular for Kids', promise: api.discover('movie', { with_genres: 10751, sort_by: 'popularity.desc' }) });
-  buildApiRow(content, { title: 'Animation', promise: api.discover('movie', { with_genres: 16, sort_by: 'popularity.desc' }) });
+  const kidsParams = { include_adult: 'false', certification_country: 'US', 'certification.lte': 'PG' };
+  buildApiRow(content, { title: 'Popular for Kids', promise: api.discover('movie', { with_genres: 10751, sort_by: 'popularity.desc', ...kidsParams }) });
+  buildApiRow(content, { title: 'Animation', promise: api.discover('movie', { with_genres: 16, sort_by: 'popularity.desc', ...kidsParams }) });
 }
 
 // ---------------------------------------------------------------
@@ -315,7 +414,7 @@ async function renderKids() {
 // ---------------------------------------------------------------
 async function renderGenreBrowse(genreId, genreName) {
   const root = appRoot();
-  root.innerHTML = `<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">${genreName}</h1><div id="genre-content"></div></div></div>`;
+  root.innerHTML = `<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">${esc(genreName)}</h1><div id="genre-content"></div></div></div>`;
   const content = $('#genre-content', root);
 
   try {

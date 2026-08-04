@@ -32,8 +32,15 @@ export function buildRow(container, { title, items, opts = {}, type } = {}) {
 
   // arrow scroll
   const scrollAmt = () => track.clientWidth * 0.75;
-  arrowL.addEventListener('click', () => track.scrollBy({ left: -scrollAmt(), behavior: 'smooth' }));
-  arrowR.addEventListener('click', () => track.scrollBy({ left: scrollAmt(), behavior: 'smooth' }));
+  const updateArrowState = () => {
+    const max = Math.max(0, track.scrollWidth - track.clientWidth);
+    arrowL.classList.toggle('disabled', track.scrollLeft <= 2);
+    arrowR.classList.toggle('disabled', track.scrollLeft >= max - 2);
+  };
+  arrowL.addEventListener('click', () => { track.scrollBy({ left: -scrollAmt(), behavior: 'smooth' }); updateArrowState(); });
+  arrowR.addEventListener('click', () => { track.scrollBy({ left: scrollAmt(), behavior: 'smooth' }); updateArrowState(); });
+  track.addEventListener('scroll', updateArrowState);
+  updateArrowState();
 
   // show arrows on hover
   row.addEventListener('mouseenter', () => row.classList.add('hover'));
@@ -78,11 +85,24 @@ export async function buildApiRow(container, { title, promise, type, opts = {} }
     const list = (data.results || []).filter(i => i.poster_path || i.backdrop_path);
     track.innerHTML = '';
     list.forEach((item, i) => {
-      track.appendChild(makeCard(item, { ...opts, type: type || undefined, rank: opts.rank ? i + 1 : undefined }));
+      const realRank = opts.rank ? data.results.indexOf(item) + 1 : undefined;
+      track.appendChild(makeCard(item, { ...opts, type: type || undefined, rank: realRank }));
     });
   } catch {
     track.innerHTML = '<div class="row-error">Failed to load. Try again later.</div>';
   }
+
+  // arrow scroll + disabled state
+  const scrollAmt = () => track.clientWidth * 0.75;
+  const updateArrowState = () => {
+    const max = Math.max(0, track.scrollWidth - track.clientWidth);
+    arrowL.classList.toggle('disabled', track.scrollLeft <= 2);
+    arrowR.classList.toggle('disabled', track.scrollLeft >= max - 2);
+  };
+  arrowL.addEventListener('click', () => { track.scrollBy({ left: -scrollAmt(), behavior: 'smooth' }); updateArrowState(); });
+  arrowR.addEventListener('click', () => { track.scrollBy({ left: scrollAmt(), behavior: 'smooth' }); updateArrowState(); });
+  track.addEventListener('scroll', updateArrowState);
+  updateArrowState();
 
   return row;
 }

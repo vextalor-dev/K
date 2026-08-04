@@ -12,9 +12,11 @@ let items = [];
 let idx = 0;
 let timer = null;
 let root = null;
+let destroyed = true;
 
 export function renderHero(targetRoot) {
   root = targetRoot;
+  destroyed = false;
   root.innerHTML = '<div class="hero-loading"></div>';
   loadHeroItems();
 }
@@ -22,11 +24,13 @@ export function renderHero(targetRoot) {
 async function loadHeroItems() {
   try {
     const data = await api.trending('all', 'week');
+    if (destroyed) return;
     items = (data.results || []).filter(i => i.backdrop_path && i.vote_average > 4.5).slice(0, 5);
     if (!items.length) { root.innerHTML = ''; return; }
     build();
     startRotation();
   } catch {
+    if (destroyed) return;
     root.innerHTML = '';
   }
 }
@@ -63,7 +67,19 @@ function build() {
     layer.className = 'hero-layer' + (i === 0 ? ' active' : '');
     layer.innerHTML = `<div class="hero-backdrop"><img src="${backdropOf(item, 'original')}" alt="" draggable="false"></div>`;
     layers.appendChild(layer);
+    if (i === 1) {
+      const preload = new Image();
+      preload.src = backdropOf(item, 'original');
+    }
   });
+
+  // pause rotation while hovering or focusing the hero
+  const pause = () => stopRotation();
+  const resume = () => { if (!destroyed) startRotation(); };
+  root.addEventListener('mouseenter', pause);
+  root.addEventListener('mouseleave', resume);
+  root.addEventListener('focusin', pause);
+  root.addEventListener('focusout', resume);
 
   // pagination dots
   const pag = $('.hero-pagination', root);
@@ -142,6 +158,7 @@ function stopRotation() {
 }
 
 export function destroy() {
+  destroyed = true;
   stopRotation();
   items = [];
   idx = 0;
