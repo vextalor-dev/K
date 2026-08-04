@@ -4,7 +4,8 @@
   "description": "NetflixX - a pixel-perfect Netflix clone streaming website. TMDB metadata + VidKing embed player, vanilla JS + Express.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "vercel-build": "echo \"No build step required - static files in public/ are served directly.\""
   },
   "engines": {
     "node": ">=18.0.0"
