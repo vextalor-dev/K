@@ -1,16 +1,15 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
   "outputDirectory": "public",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/tmdb/(.*)",
-      "dest": "/api/tmdb.js"
+      "source": "/api/tmdb/(.*)",
+      "destination": "/api/tmdb.js"
     },
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
