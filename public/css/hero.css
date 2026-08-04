@@ -1,0 +1,242 @@
+/* ============================================================
+   K - hero.css  (Cineby neo banner)
+   ============================================================ */
+
+.hero {
+  position: relative;
+  height: 85vh;
+  min-height: 420px;
+  max-height: 100vh;
+  width: 100%;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* backdrop image container */
+.hero-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero-backdrop img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  transform: scale(1.04);
+  transition: opacity 1s ease;
+}
+
+/* crossfade layers */
+.hero-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.hero-layer.active {
+  opacity: 1;
+}
+
+/* vignette gradients — stacked left / bottom / top scrims */
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(180deg, transparent 40%, rgba(5,7,10,0.92) 88%, var(--bg) 100%),
+    linear-gradient(90deg, rgba(5,7,10,0.78) 0%, rgba(5,7,10,0.35) 42%, transparent 65%),
+    linear-gradient(180deg, rgba(5,7,10,0.6) 0%, transparent 35%);
+}
+
+/* subtle red glow in upper-right corner */
+.hero-glow {
+  position: absolute;
+  right: -10%;
+  top: -10%;
+  width: 50%;
+  height: 55%;
+  background: radial-gradient(ellipse at center, rgba(220, 38, 38, 0.14) 0%, rgba(220, 38, 38, 0.06) 30%, transparent 60%);
+  z-index: 1;
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+/* hero content positioned at bottom */
+.hero-content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 14vh;
+  padding-left: max(16px, 4vw);
+  padding-right: 16px;
+}
+
+.hero-content-inner {
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* badge (e.g. "#1 Trending") */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: clamp(11px, 0.85vw, 13px);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent-hi);
+  margin-bottom: 12px;
+}
+
+.hero-badge .badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* title — large, tight tracking */
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3.4vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--text);
+  letter-spacing: -0.015em;
+}
+
+/* meta row: rating • year • type • seasons */
+.hero-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1;
+  color: rgba(238, 241, 246, 0.85);
+}
+
+.hero-meta .meta-rating {
+  color: var(--accent-hi);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hero-meta .meta-rating .icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* description */
+.hero-desc {
+  color: rgba(238, 241, 246, 0.82);
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+/* CTA buttons */
+.hero-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+/* pagination dots (for hero rotation) */
+.hero-pagination {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+}
+
+.hero-dot {
+  width: 24px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(238, 241, 246, 0.22);
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease, width 0.3s ease;
+}
+
+.hero-dot:hover {
+  background: rgba(238, 241, 246, 0.4);
+}
+
+.hero-dot.active {
+  width: 44px;
+  background: var(--primary);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* hero loading / error states */
+.hero-loading {
+  min-height: 85vh;
+  max-height: 100vh;
+  min-height: 420px;
+  background: linear-gradient(180deg, #0a0d12 0%, var(--bg) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+  .hero {
+    height: 70vh;
+    min-height: 380px;
+  }
+
+  .hero-content {
+    padding-bottom: 10vh;
+  }
+
+  .hero-content-inner {
+    max-width: 90%;
+  }
+
+  .hero-title {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .hero-desc {
+    font-size: 14px;
+    -webkit-line-clamp: 2;
+  }
+
+  .hero-pagination {
+    bottom: 16px;
+  }
+
+  .hero-dot {
+    width: 18px;
+  }
+
+  .hero-dot.active {
+    width: 32px;
+  }
+}

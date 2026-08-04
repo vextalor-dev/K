@@ -1,0 +1,238 @@
+/* ============================================================
+   K - rows.css  (horizontal scroll sections + grid pages)
+   ============================================================ */
+
+.row {
+  position: relative;
+  margin-bottom: 3.2vw;
+}
+
+/* section title with red left bar */
+.row-title {
+  font-family: var(--font-display);
+  font-size: clamp(16px, 1.3vw, 22px);
+  font-weight: 700;
+  color: var(--text-hi);
+  margin: 0 0 0.8vw;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row-title::before {
+  content: "";
+  width: 3px;
+  height: 20px;
+  background: var(--primary);
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+/* scrollable row track */
+.row-track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.row-track::-webkit-scrollbar {
+  display: none;
+}
+
+.row-track > * {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+/* card width inside horizontal rows */
+.row-track .card {
+  width: clamp(140px, 16vw, 190px);
+}
+
+/* row arrow buttons (desktop hover) */
+.row-arrow {
+  position: absolute;
+  top: 30px;
+  bottom: 0;
+  width: 44px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.row-arrow .icon {
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+.row-arrow.left {
+  left: 0;
+  background: linear-gradient(90deg, rgba(5,7,10,0.9), transparent);
+  border-radius: 0 8px 8px 0;
+}
+
+.row-arrow.right {
+  right: 0;
+  background: linear-gradient(270deg, rgba(5,7,10,0.9), transparent);
+  border-radius: 8px 0 0 8px;
+}
+
+.row:hover .row-arrow {
+  opacity: 1;
+}
+
+.row:hover .row-arrow.disabled {
+  opacity: 0;
+}
+
+/* skeleton row */
+.row-skeleton {
+  display: flex;
+  gap: 12px;
+}
+
+.row-skeleton .card-skeleton {
+  flex-shrink: 0;
+}
+
+/* row error */
+.row-error {
+  padding: 2vw 0;
+}
+
+.row-error p {
+  font-size: 14px;
+  color: var(--text-mid);
+  margin-bottom: 10px;
+}
+
+/* ---------- Grid pages (My List, Search results) ---------- */
+.grid-page {
+  padding: calc(var(--nav-h) + 4vh) 16px 8vh;
+}
+
+@media (min-width: 768px) {
+  .grid-page {
+    padding: calc(var(--nav-h-lg) + 4vh) 16px 8vh;
+  }
+}
+
+.grid-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2vw, 30px);
+  font-weight: 700;
+  margin-bottom: 4vh;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.grid-page-title::before {
+  content: "";
+  width: 3px;
+  height: 20px;
+  background: var(--primary);
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+.grid .card {
+  width: 100%;
+}
+
+.grid-empty {
+  color: var(--text-mid);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* grid skeleton */
+.grid-skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.grid-skeleton .card-skeleton {
+  width: 100%;
+}
+
+/* ---------- page hero (detail / genre pages) ---------- */
+.page-hero {
+  position: relative;
+  min-height: 85vh;
+  display: flex;
+  align-items: flex-end;
+  padding: calc(var(--nav-h-lg) + 6vh) 16px 10vh;
+  background-size: cover;
+  background-position: center top;
+}
+
+.page-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(5,7,10,0.82) 0%, rgba(5,7,10,0.4) 55%, transparent 100%);
+}
+
+.page-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(5,7,10,0.55) 0%, transparent 35%, var(--bg) 100%);
+}
+
+.page-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.page-hero-inner {
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3vw, 3.4rem);
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+@media (max-width: 768px) {
+  .page-hero {
+    min-height: 60vh;
+  }
+
+  .page-hero-inner {
+    max-width: 92%;
+  }
+}

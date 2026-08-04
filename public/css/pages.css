@@ -1,0 +1,288 @@
+/* ============================================================
+   K - pages.css  (My List, New & Popular, Languages, Kids,
+   title detail, error states)
+   ============================================================ */
+
+/* ---------- New & Popular ---------- */
+.np-section {
+  margin-bottom: 5vh;
+}
+
+.np-coming-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.np-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  transition: border-color 0.25s ease;
+}
+
+.np-item:hover {
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+.np-date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 52px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.np-date-badge .np-dow {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-mid);
+}
+
+.np-date-badge .np-day {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.np-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.np-item-title {
+  font-family: var(--font-display);
+  font-size: clamp(14px, 1.2vw, 17px);
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.np-item-sub {
+  font-size: 12px;
+  color: var(--text-mid);
+  margin-bottom: 6px;
+}
+
+.np-item-desc {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.np-notify {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-subtle);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 8px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.np-notify:hover {
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+.np-notify.notified {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.np-notify .icon {
+  width: 1em;
+  height: 1em;
+}
+
+/* ---------- KIDS THEME ---------- */
+body.kids-mode {
+  background: #0e1520;
+}
+
+body.kids-mode main {
+  background: linear-gradient(180deg, #0e1520 0%, #0a1018 40%, #05070a 100%);
+}
+
+body.kids-mode .card-media {
+  border-radius: 14px;
+  border-color: rgba(34, 197, 94, 0.15);
+}
+
+body.kids-mode .card:hover .card-media {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+body.kids-mode .btn-play {
+  background: #22c55e;
+  color: #fff;
+}
+
+body.kids-mode .grid-card {
+  border-radius: 14px;
+}
+
+body.kids-mode .np-item-title,
+body.kids-mode .watch-title {
+  color: #86efac;
+}
+
+/* ---------- title detail page ---------- */
+.detail-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: clamp(12px, 1vw, 14px);
+  color: var(--text-mid);
+  margin-top: 16px;
+}
+
+.detail-facts b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.detail-facts a {
+  color: var(--text-mid);
+  transition: color 0.2s ease;
+}
+
+.detail-facts a:hover {
+  color: var(--text);
+}
+
+.detail-back {
+  position: absolute;
+  top: calc(var(--nav-h-lg) + 2vh);
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: 9999px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 2;
+  transition: background 0.2s ease;
+}
+
+.detail-back:hover {
+  background: rgba(220, 38, 38, 0.2);
+}
+
+.detail-back .icon {
+  width: 1em;
+  height: 1em;
+}
+
+.detail-body {
+  padding: 4vh 16px 8vh;
+}
+
+.detail-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.detail-buttons .btn {
+  font-size: clamp(12px, 1.05vw, 15px);
+  padding: 0.7em 1.5em;
+}
+
+.detail-desc {
+  font-size: clamp(13px, 1.05vw, 15px);
+  line-height: 1.55;
+  max-width: 700px;
+  color: rgba(238, 241, 246, 0.78);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.detail-seasons {
+  margin-top: 3vh;
+}
+
+.detail-section {
+  margin-bottom: 4vh;
+}
+
+.detail-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(15px, 1.2vw, 18px);
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-section-title::before {
+  content: "";
+  width: 3px;
+  height: 18px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+/* ---------- global error screen ---------- */
+.error-screen {
+  min-height: 65vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: calc(var(--nav-h-lg) + 6vh) 16px 8vh;
+  text-align: center;
+}
+
+.error-screen h2 {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 1.8vw, 26px);
+  font-weight: 800;
+}
+
+.error-screen p {
+  font-size: clamp(13px, 1.1vw, 16px);
+  color: var(--text-mid);
+  max-width: 440px;
+  line-height: 1.5;
+}
+
+.error-screen .btn {
+  font-size: clamp(13px, 1vw, 15px);
+  padding: 0.75em 1.8em;
+}
+
+@media (max-width: 768px) {
+  .np-coming-grid {
+    grid-template-columns: 1fr;
+  }
+}
