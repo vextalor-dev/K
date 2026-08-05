@@ -214,8 +214,9 @@ export function renderWatch(root) {
       // seek verification: did we land at the target?
       if (pendingSeek) {
         const dt = Date.now() - pendingSeek.at;
-        if (Math.abs(evt.currentTime - pendingSeek.target) < 5) {
-          // command worked (or reload landed) - seek is done
+        const seekedEvent = evt.event === 'seeked';
+        if (seekedEvent || Math.abs(evt.currentTime - pendingSeek.target) < 5) {
+          // command worked (seeked event) or reload landed - seek is done
           pendingSeek = null;
           seekReloadPending = false;
         } else if (dt > 3000 && !seekReloadPending) {
