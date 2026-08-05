@@ -38,9 +38,6 @@ export function renderFooter(root) {
           </svg>
           Back to top
         </button>
-        <div class="footer-disclaimer">
-          This product uses the TMDB API but is not endorsed or certified by TMDB. All metadata and images are provided by The Movie Database (TMDB). Streaming is provided by third-party embed services.
-        </div>
         <div class="footer-copy">
           &copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.
         </div>
