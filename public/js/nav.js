@@ -75,6 +75,7 @@ export function renderNav() {
   bindSearch();
   bindBrowse();
   bindMobile();
+  window.addEventListener('hashchange', closeNavOverlays);
 }
 
 function buildBrowseDropdown() {
@@ -87,14 +88,45 @@ function buildBrowseDropdown() {
   ).join('');
 }
 
+const HIDE_AFTER = 200;
+const SCROLL_DIR_EPS = 4;
+
 function bindScroll() {
   let ticking = false;
+  let lastY = window.scrollY || 0;
+  let navHidden = false;
+
   window.addEventListener('scroll', () => {
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(() => {
-      navRoot().classList.toggle('scrolled', window.scrollY > 50);
       ticking = false;
+      const y = window.scrollY || 0;
+      const root = navRoot();
+      if (!root) return;
+
+      root.classList.toggle('scrolled', y > 50);
+
+      const nearTop = y <= HIDE_AFTER;
+      const movingUp = y < lastY - SCROLL_DIR_EPS;
+      const movingDown = y > lastY + SCROLL_DIR_EPS;
+      const overlayOpen = browseOpen ||
+        searchOpen ||
+        (searchBox && searchBox.classList.contains('open')) ||
+        (searchDrop && searchDrop.classList.contains('open')) ||
+        mobileOpen;
+      const dockEl = $('.dock-outer');
+      const dockVisible = !!dockEl && getComputedStyle(dockEl).display !== 'none';
+      const tvMode = document.body.classList.contains('tv-mode');
+
+      if (nearTop || movingUp || overlayOpen || dockVisible || tvMode) {
+        navHidden = false;
+      } else if (movingDown && y > HIDE_AFTER) {
+        navHidden = true;
+      }
+
+      root.classList.toggle('nav-hidden', navHidden);
+      lastY = y;
     });
   });
 }
@@ -109,7 +141,7 @@ function bindSearch() {
   btn.addEventListener('click', () => {
     searchOpen = !searchOpen;
     box.classList.toggle('open', searchOpen);
-    if (searchOpen) { input.focus(); }
+    if (searchOpen) { showNav(); input.focus(); }
     else { closeSearch(); }
   });
 
@@ -133,8 +165,26 @@ function bindSearch() {
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && searchOpen) closeSearch();
+    if (e.key === 'Escape' && searchOpen) closeNavOverlays();
   });
+}
+
+function showNav() {
+  const root = navRoot();
+  if (root) root.classList.remove('nav-hidden');
+}
+
+function closeNavOverlays() {
+  if (browseOpen) {
+    browseOpen = false;
+    const dd = $('.browse-dropdown');
+    const btn = $('.nav-browse');
+    if (dd) dd.classList.remove('open');
+    if (btn) { btn.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+  }
+  if (searchOpen || (searchDrop && searchDrop.classList.contains('open'))) {
+    closeSearch();
+  }
 }
 
 function closeSearch() {
@@ -194,24 +244,17 @@ function bindBrowse() {
     dd.classList.toggle('open', browseOpen);
     btn.classList.toggle('open', browseOpen);
     btn.setAttribute('aria-expanded', browseOpen);
+    if (browseOpen) showNav();
   });
 
   document.addEventListener('click', (e) => {
     if (browseOpen && !dd.contains(e.target) && !btn.contains(e.target)) {
-      browseOpen = false;
-      dd.classList.remove('open');
-      btn.classList.remove('open');
-      btn.setAttribute('aria-expanded', 'false');
+      closeNavOverlays();
     }
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && browseOpen) {
-      browseOpen = false;
-      dd.classList.remove('open');
-      btn.classList.remove('open');
-      btn.setAttribute('aria-expanded', 'false');
-    }
+    if (e.key === 'Escape' && browseOpen) closeNavOverlays();
   });
 }
 

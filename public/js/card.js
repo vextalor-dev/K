@@ -12,6 +12,12 @@ import { inList, toggle as toggleList, getReaction, setReaction } from './mylist
 
 // lazy detail cache shared across cards/modal/detail pages
 const detailCache = new Map();
+
+const fallbackNode = () => {
+  const div = document.createElement('div');
+  div.className = 'card-fallback';
+  return div;
+};
 export const detailFor = (type, id) => {
   const key = `${type}:${id}`;
   if (!detailCache.has(key)) {
@@ -52,9 +58,10 @@ export function makeCard(item, opts = {}) {
   el.tabIndex = 0;
   el.setAttribute('role', 'button');
   el.setAttribute('aria-label', title);
+  el.setAttribute('title', title);
 
   const img = poster
-    ? `<img class="card-poster" src="${poster}" alt="${esc(title)}" loading="${lazy ? 'lazy' : 'eager'}" referrerpolicy="no-referrer">`
+    ? `<img class="card-poster" src="${poster}" alt="${esc(title)}" loading="${lazy ? 'lazy' : 'eager'}" decoding="async" fetchpriority="low" referrerpolicy="no-referrer">`
     : '<div class="card-fallback"></div>';
 
   const rating = item.vote_average > 0 ? matchPct(item.vote_average) : null;
@@ -86,6 +93,11 @@ export function makeCard(item, opts = {}) {
   el.addEventListener('click', open);
   onEnter(el, open);
 
+  if (poster) {
+    const posterEl = el.querySelector('.card-poster');
+    posterEl.addEventListener('error', () => posterEl.replaceWith(fallbackNode()));
+  }
+
   return el;
 }
 
@@ -103,14 +115,20 @@ export function makeGridCard(item, { onRemove } = {}) {
   el.tabIndex = 0;
   el.setAttribute('role', 'button');
   el.setAttribute('aria-label', title);
+  el.setAttribute('title', title);
   el.innerHTML = `
-    ${poster ? `<img src="${poster}" alt="${esc(title)}" loading="lazy" referrerpolicy="no-referrer">` : '<div class="card-fallback"></div>'}
+    ${poster ? `<img src="${poster}" alt="${esc(title)}" loading="lazy" decoding="async" fetchpriority="low" referrerpolicy="no-referrer">` : '<div class="card-fallback"></div>'}
     <div class="gc-overlay">
       ${icon('play')}
       <span class="gc-title">${esc(title)}</span>
     </div>
     <button class="gc-remove" aria-label="Remove from My List">${icon('close')}</button>
   `;
+
+  if (poster) {
+    const posterEl = el.querySelector('img');
+    posterEl.addEventListener('error', () => posterEl.replaceWith(fallbackNode()));
+  }
 
   const open = () => openDetail(type, id);
   el.addEventListener('click', open);

@@ -9,6 +9,12 @@
   right: 0;
   z-index: 60;
   pointer-events: none;
+  transition: transform 0.35s ease;
+}
+
+/* hide-on-scroll: header slides up out of view, stays in the DOM */
+.nav.nav-hidden {
+  transform: translateY(-100%);
 }
 
 /* transparent header with gradient scrim */
@@ -194,6 +200,16 @@
 .browse-item .icon {
   width: 1em;
   height: 1em;
+}
+
+/* ---- keyboard focus rings (nav links + dropdown items) ---- */
+.nav-link:focus-visible,
+.nav-browse:focus-visible,
+.browse-item:focus-visible,
+.search-drop .drop-item:focus-visible {
+  outline: 2px solid var(--accent-hi);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 /* ---- right side ---- */

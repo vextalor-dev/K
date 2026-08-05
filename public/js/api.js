@@ -44,15 +44,21 @@ export const discover = (media, params = {}) => fetchTMDB(`discover/${media}`, p
 let genreMapPromise = null;
 export const loadGenres = () => {
   if (!genreMapPromise) {
-    genreMapPromise = Promise.all([fetchTMDB('genre/movie/list'), fetchTMDB('genre/tv/list')]).then(
-      ([m, t]) => {
-        const map = {};
-        [...(m.genres || []), ...(t.genres || [])].forEach((g) => {
-          if (g.id && g.name && !map[g.id]) map[g.id] = g.name;
-        });
-        return map;
-      }
-    );
+    genreMapPromise = Promise.all([fetchTMDB('genre/movie/list'), fetchTMDB('genre/tv/list')])
+      .then(
+        ([m, t]) => {
+          const map = {};
+          [...(m.genres || []), ...(t.genres || [])].forEach((g) => {
+            if (g.id && g.name && !map[g.id]) map[g.id] = g.name;
+          });
+          return map;
+        }
+      )
+      .catch((err) => {
+        // don't cache a permanent failure — let the next caller retry
+        genreMapPromise = null;
+        throw err;
+      });
   }
   return genreMapPromise;
 };

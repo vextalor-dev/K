@@ -266,6 +266,41 @@ body.watch-mode .dock-outer {
   margin-bottom: 36px;
 }
 
+/* watch action buttons (Next Episode / Play Again / Restart) */
+.watch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+
+.watch-actions .btn {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.watch-actions .btn .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.watch-actions .watch-next {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.watch-actions .watch-next:hover {
+  background: rgba(220, 38, 38, 0.85);
+  box-shadow: 0 0 18px var(--accent-glow-strong);
+}
+
+.watch-actions .watch-restart:hover {
+  border-color: rgba(220, 38, 38, 0.35);
+  box-shadow: 0 0 18px var(--accent-glow);
+}
+
 .watch-section-title {
   font-family: var(--font-display);
   font-size: clamp(15px, 1.2vw, 18px);

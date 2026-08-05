@@ -7,11 +7,15 @@ import { load, save } from './utils.js';
 
 const KEY = 'nkx-mylist';
 
-export const getList = () => load(KEY, []);
+export const getList = () => {
+  const list = load(KEY, []);
+  return Array.isArray(list) ? list : [];
+};
 
 export const inList = (id, type) => getList().some((x) => x.id === id && x.type === type);
 
 export const add = (item) => {
+  if (!item || item.id == null || item.type == null) return false;
   const list = getList();
   if (!inList(item.id, item.type)) {
     list.push({
@@ -51,14 +55,19 @@ export const setReaction = (id, type, value) => {
   save(REACTIONS_KEY, all);
 };
 
-export const likedItems = () =>
-  Object.entries(load(REACTIONS_KEY, {}))
-    .filter(([, v]) => v === 'like')
-    .map(([k]) => {
-      const [type, id] = k.split(':');
-      return { type, id: Number(id) };
-    })
-    .filter((x) => x.type && (x.type === 'movie' || x.type === 'tv') && Number.isInteger(x.id) && x.id > 0);
+export const likedItems = () => {
+  try {
+    return Object.entries(load(REACTIONS_KEY, {}))
+      .filter(([, v]) => v === 'like')
+      .map(([k]) => {
+        const [type, id] = k.split(':');
+        return { type, id: Number(id) };
+      })
+      .filter((x) => x.type && (x.type === 'movie' || x.type === 'tv') && Number.isInteger(x.id) && x.id > 0);
+  } catch {
+    return [];
+  }
+};
 
 // Notify Me toggles for New & Popular
 const NOTIFY_KEY = 'nkx-notify';
@@ -72,3 +81,5 @@ export const toggleNotify = (id) => {
   else list.push(id);
   save(NOTIFY_KEY, list);
 };
+
+export const count = () => getList().length;

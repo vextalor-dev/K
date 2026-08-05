@@ -9,6 +9,23 @@ import { openDetail } from './card.js';
 
 let reqSeq = 0;
 
+function getSearchResults(content) {
+  return Array.from(content.querySelectorAll('.top-search-row, .result-card'));
+}
+
+function highlight(text, q) {
+  const s = String(text);
+  const t = q ? q.trim() : '';
+  if (!t) return esc(s);
+  const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (!escaped) return esc(s);
+  const re = new RegExp(`(${escaped})`, 'ig');
+  return s.split(re).map(part => {
+    if (part && part.toLowerCase() === t.toLowerCase()) return `<mark class="hl">${esc(part)}</mark>`;
+    return esc(part);
+  }).join('');
+}
+
 export function renderSearch(root, query = '') {
   root.innerHTML = `
     <div class="search-page layout-container">
@@ -38,7 +55,34 @@ export function renderSearch(root, query = '') {
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && input.value.trim()) {
       location.hash = `#/search=${encodeURIComponent(input.value.trim())}`;
+      return;
     }
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && input.value.trim()) {
+      const results = getSearchResults(content);
+      if (!results.length) return;
+      e.preventDefault();
+      const target = e.key === 'ArrowDown' ? results[0] : results[results.length - 1];
+      target.focus();
+    }
+  });
+
+  content.addEventListener('keydown', (e) => {
+    const results = getSearchResults(content);
+    if (!results.length) return;
+    const idx = results.indexOf(document.activeElement);
+    if (e.key === 'Escape') {
+      if (idx !== -1) {
+        e.preventDefault();
+        input.focus();
+      }
+      return;
+    }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    const next = e.key === 'ArrowDown'
+      ? (idx + 1) % results.length
+      : (idx - 1 + results.length) % results.length;
+    results[next].focus();
   });
 
   if (query) {
@@ -137,7 +181,7 @@ const doSearch = debounce(async (root, content, sectionTitle, q) => {
       card.innerHTML = `
         <img src="${img}" alt="${esc(title)}" loading="lazy" referrerpolicy="no-referrer">
         <div class="rc-body">
-          <div class="rc-title">${esc(title)}</div>
+          <div class="rc-title">${highlight(title, q)}</div>
           <div class="rc-type">${type === 'tv' ? 'TV' : 'Movie'}${yr ? ' \u00B7 ' + yr : ''}</div>
         </div>
         <div class="rc-play">${icon('play')}</div>

@@ -13,6 +13,22 @@ let idx = 0;
 let timer = null;
 let root = null;
 let destroyed = true;
+let preloadLink = null;
+
+function addPreloadLink(url) {
+  const link = document.createElement('link');
+  link.rel = 'preload';
+  link.as = 'image';
+  link.fetchPriority = 'low';
+  link.href = url;
+  document.head.appendChild(link);
+  preloadLink = link;
+}
+
+function removePreloadLink() {
+  if (preloadLink && preloadLink.isConnected) preloadLink.remove();
+  preloadLink = null;
+}
 
 export function renderHero(targetRoot) {
   root = targetRoot;
@@ -65,11 +81,13 @@ function build() {
   items.forEach((item, i) => {
     const layer = document.createElement('div');
     layer.className = 'hero-layer' + (i === 0 ? ' active' : '');
-    layer.innerHTML = `<div class="hero-backdrop"><img src="${backdropOf(item, 'original')}" alt="" draggable="false"></div>`;
+    const eager = i === 0 ? ' fetchpriority="high" decoding="async"' : '';
+    layer.innerHTML = `<div class="hero-backdrop"><img src="${backdropOf(item, 'original')}" alt="" draggable="false"${eager}></div>`;
     layers.appendChild(layer);
     if (i === 1) {
       const preload = new Image();
       preload.src = backdropOf(item, 'original');
+      addPreloadLink(backdropOf(item, 'original'));
     }
   });
 
@@ -107,6 +125,7 @@ function build() {
 
 function goTo(next) {
   if (next === idx || !items.length) return;
+  if (preloadLink && next !== 1) removePreloadLink();
   const layers = $$('.hero-layer', root);
   const dots = $$('.hero-dot', root);
 
@@ -160,6 +179,7 @@ function stopRotation() {
 export function destroy() {
   destroyed = true;
   stopRotation();
+  removePreloadLink();
   items = [];
   idx = 0;
 }

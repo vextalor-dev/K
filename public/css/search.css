@@ -83,6 +83,12 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
+.top-search-row:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .top-search-rank {
   font-size: clamp(16px, 1.6vw, 24px);
   font-weight: 800;
@@ -152,6 +158,11 @@
   border-color: rgba(220, 38, 38, 0.25);
 }
 
+.result-card:focus-visible {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary);
+}
+
 .result-card img {
   width: 100%;
   height: 100%;
@@ -214,4 +225,11 @@
   font-size: 15px;
   padding: 3vh 0;
   line-height: 1.6;
+}
+
+mark.hl {
+  background: rgba(220, 38, 38, 0.35);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
 }

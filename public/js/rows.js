@@ -51,9 +51,12 @@ export function buildRow(container, { title, items, opts = {}, type } = {}) {
 }
 
 // ---------------------------------------------------------------
-// Build a horizontal row from API data
+// Build a horizontal row from API data.
+// Accepts either a pre-built `promise` (existing call sites) or a
+// `load` function returning a fresh promise, so the Retry button can
+// re-run the fetch.
 // ---------------------------------------------------------------
-export async function buildApiRow(container, { title, promise, type, opts = {} } = {}) {
+export async function buildApiRow(container, { title, promise, load, type, opts = {} } = {}) {
   const row = document.createElement('section');
   row.className = 'row';
   row.innerHTML = `
@@ -68,29 +71,49 @@ export async function buildApiRow(container, { title, promise, type, opts = {} }
   const arrowL = $('.row-arrow.left', row);
   const arrowR = $('.row-arrow.right', row);
 
-  // skeleton
-  for (let i = 0; i < 7; i++) {
-    const skel = document.createElement('div');
-    skel.className = 'card-skeleton';
-    track.appendChild(skel);
-  }
+  const loader = typeof load === 'function' ? load : () => promise;
 
-  arrowL.addEventListener('click', () => track.scrollBy({ left: -track.clientWidth * 0.75, behavior: 'smooth' }));
-  arrowR.addEventListener('click', () => track.scrollBy({ left: track.clientWidth * 0.75, behavior: 'smooth' }));
-  row.addEventListener('mouseenter', () => row.classList.add('hover'));
-  row.addEventListener('mouseleave', () => row.classList.remove('hover'));
+  const showSkeleton = () => {
+    track.innerHTML = Array.from({ length: 7 }, () =>
+      '<div class="card-skeleton" aria-hidden="true" tabindex="-1"></div>'
+    ).join('');
+  };
 
-  try {
-    const data = await promise;
-    const list = (data.results || []).filter(i => i.poster_path || i.backdrop_path);
-    track.innerHTML = '';
-    list.forEach((item, i) => {
-      const realRank = opts.rank ? data.results.indexOf(item) + 1 : undefined;
-      track.appendChild(makeCard(item, { ...opts, type: type || undefined, rank: realRank }));
+  const showError = () => {
+    track.innerHTML = `
+      <div class="row-error" role="alert">
+        <p>Failed to load. Try again later.</p>
+        <button type="button" class="btn-retry">Retry</button>
+      </div>
+    `;
+    $('.btn-retry', track).addEventListener('click', () => {
+      showSkeleton();
+      loadRow();
     });
-  } catch {
-    track.innerHTML = '<div class="row-error">Failed to load. Try again later.</div>';
-  }
+  };
+
+  const showEmpty = () => {
+    track.innerHTML = '<div class="row-empty">Nothing here yet.</div>';
+  };
+
+  const loadRow = async () => {
+    try {
+      const data = await loader();
+      const list = (data.results || []).filter(i => i.poster_path || i.backdrop_path);
+      track.innerHTML = '';
+      if (!list.length) {
+        showEmpty();
+      } else {
+        list.forEach((item, i) => {
+          const realRank = opts.rank ? data.results.indexOf(item) + 1 : undefined;
+          track.appendChild(makeCard(item, { ...opts, type: type || undefined, rank: realRank }));
+        });
+      }
+    } catch {
+      showError();
+    }
+    updateArrowState();
+  };
 
   // arrow scroll + disabled state
   const scrollAmt = () => track.clientWidth * 0.75;
@@ -102,7 +125,11 @@ export async function buildApiRow(container, { title, promise, type, opts = {} }
   arrowL.addEventListener('click', () => { track.scrollBy({ left: -scrollAmt(), behavior: 'smooth' }); updateArrowState(); });
   arrowR.addEventListener('click', () => { track.scrollBy({ left: scrollAmt(), behavior: 'smooth' }); updateArrowState(); });
   track.addEventListener('scroll', updateArrowState);
-  updateArrowState();
+  row.addEventListener('mouseenter', () => row.classList.add('hover'));
+  row.addEventListener('mouseleave', () => row.classList.remove('hover'));
+
+  showSkeleton();
+  await loadRow();
 
   return row;
 }
@@ -145,7 +172,7 @@ export function buildGridSkeleton(container, count = 12) {
   page.innerHTML = `
     <div class="layout-container">
       <div class="grid grid-skeleton">
-        ${Array.from({ length: count }, () => '<div class="card-skeleton"></div>').join('')}
+        ${Array.from({ length: count }, () => '<div class="card-skeleton" aria-hidden="true" tabindex="-1"></div>').join('')}
       </div>
     </div>
   `;

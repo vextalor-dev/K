@@ -120,6 +120,55 @@
   margin-bottom: 10px;
 }
 
+.row-error .btn-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-hi);
+  background: var(--primary);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.row-error .btn-retry:hover,
+.row-error .btn-retry:focus-visible {
+  background: var(--accent-hi);
+  transform: translateY(-1px);
+}
+
+.row-error .btn-retry:focus-visible {
+  outline: 2px solid var(--accent-glow-strong);
+  outline-offset: 2px;
+}
+
+/* row empty placeholder */
+.row-empty {
+  padding: 2vw 0;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text-mid);
+}
+
+/* skeleton shimmer (rows + grids) */
+@keyframes k-row-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.row-track .card-skeleton,
+.grid-skeleton .card-skeleton {
+  pointer-events: none;
+  user-select: none;
+  scroll-snap-align: none;
+  background:
+    linear-gradient(90deg, var(--surface-1) 0%, var(--surface-2) 45%, var(--surface-1) 100%);
+  background-size: 200% 100%;
+  animation: k-row-shimmer 1.8s ease-in-out infinite;
+}
+
 /* ---------- Grid pages (My List, Search results) ---------- */
 .grid-page {
   padding: calc(var(--nav-h) + 4vh) 16px 8vh;

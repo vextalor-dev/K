@@ -3,9 +3,10 @@
 // Fullscreen player page with VidKing embed
 // ============================================================
 
-import { $, qs, icon, load, save, readProgress, writeProgress, titleOf, yearOf, matchPct } from './utils.js';
+import { $, qs, icon, load, save, readProgress, writeProgress, clearProgress, titleOf, yearOf, matchPct } from './utils.js';
 import { SUBTITLES, VIDKING } from './config.js';
 import { details } from './api.js';
+import { openWatch } from './card.js';
 
 let messageHandler = null;
 let mouseMoveHandler = null;
@@ -86,6 +87,7 @@ export function renderWatch(root) {
     <div class="watch-info layout-container">
       <div class="watch-title"></div>
       <div class="watch-meta"></div>
+      <div class="watch-actions"></div>
       <p class="watch-desc"></p>
     </div>
   `;
@@ -96,6 +98,7 @@ export function renderWatch(root) {
   const titleEl = $('.watch-title', root);
   const metaEl = $('.watch-meta', root);
   const descEl = $('.watch-desc', root);
+  const actionsEl = $('.watch-actions', root);
   const iframe = $('.watch-iframe', root);
   iframeEl = iframe;
   playerTime = resumeSec;
@@ -203,8 +206,49 @@ export function renderWatch(root) {
   escHandler = (e) => { if (e.key === 'Escape') window.history.back(); };
   document.addEventListener('keydown', escHandler);
 
+  // Next Episode / Play Again + Restart-from-beginning actions (watch info area)
+  const renderWatchActions = (det) => {
+    if (!actionsEl) return;
+    actionsEl.innerHTML = '';
+
+    if (type === 'tv') {
+      const next = nextEpisodeTarget(det, season, episode);
+      if (next) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-glass watch-next';
+        btn.innerHTML = `${icon('play')} <span>${next.label}</span>`;
+        btn.addEventListener('click', () => openWatch('tv', id, next.season, next.episode));
+        actionsEl.appendChild(btn);
+      }
+    }
+
+    if (progress && Number.isFinite(progress.seconds) && progress.seconds > 20) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-glass watch-restart';
+      btn.innerHTML = `${icon('skipBack')} <span>Watch from beginning</span>`;
+      btn.addEventListener('click', () => {
+        clearProgress(type, id);
+        playerTime = 0;
+        lastSaveAt = 0;
+        lastSavedProg = 0;
+        btn.remove();
+        try {
+          const url = new URL(iframeEl.src);
+          url.searchParams.set('progress', '0');
+          iframeEl.src = url.toString();
+        } catch {}
+      });
+      actionsEl.appendChild(btn);
+    }
+  };
+
   // load details for info section
-  loadDetails(type, id, season, episode, titleEl, metaEl, descEl, (det) => { detInfo = det; });
+  loadDetails(type, id, season, episode, titleEl, metaEl, descEl, (det) => {
+    detInfo = det;
+    renderWatchActions(det);
+  });
 
   // handle iframe load error
   iframe.addEventListener('load', () => {
@@ -234,6 +278,22 @@ async function loadDetails(type, id, season, episode, titleEl, metaEl, descEl, o
   } catch {
     // silently fail - info is optional
   }
+}
+
+// Work out where a "Next Episode" button should take the user.
+// Uses the TMDB details payload (details.seasons[] with per-season
+// episode_count, details.number_of_seasons). Returns null when the
+// data needed for a safe decision is missing (button stays hidden).
+function nextEpisodeTarget(det, curSeason, curEpisode) {
+  const seasons = Array.isArray(det && det.seasons) ? det.seasons : [];
+  const numSeasons = Number(det && det.number_of_seasons);
+  const cur = seasons.find((s) => Number(s.season_number) === curSeason);
+  const epsInCur = cur && Number.isFinite(cur.episode_count) ? Number(cur.episode_count) : null;
+  if (epsInCur == null) return null;
+  if (curEpisode < epsInCur) return { season: curSeason, episode: curEpisode + 1, label: 'Next Episode' };
+  if (Number.isFinite(numSeasons) && curSeason < numSeasons) return { season: curSeason + 1, episode: 1, label: 'Next Episode' };
+  if (!Number.isFinite(numSeasons)) return null;
+  return { season: 1, episode: 1, label: 'Play Again' };
 }
 
 function showError(root, msg) {

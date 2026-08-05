@@ -251,6 +251,62 @@ body.kids-mode .watch-title {
   border-radius: 2px;
 }
 
+/* detail cast row — snap scrolling, hidden scrollbar.
+   Wheel events are hit-tested at the cursor, so the cast row
+   only scrolls when the pointer is over it (CSS-only). */
+.detail-section .modal-cast {
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.detail-section .modal-cast::-webkit-scrollbar {
+  display: none;
+}
+
+.detail-section .cast-member {
+  scroll-snap-align: start;
+}
+
+/* detail episode rows — hover / pressed states + active marker */
+.detail-section .episode-list .episode-row {
+  border: 1px solid transparent;
+}
+
+.detail-section .episode-list .episode-row:hover {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+
+.detail-section .episode-list .episode-row:active {
+  background: var(--accent-glow);
+  border-color: var(--primary);
+}
+
+.detail-section .episode-list .episode-row.playing {
+  background: var(--accent-glow);
+  border-color: var(--primary);
+}
+
+.detail-section .ep-playing {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent-hi);
+}
+
+.detail-section .ep-playing .icon {
+  width: 0.9em;
+  height: 0.9em;
+}
+
 /* ---------- global error screen ---------- */
 .error-screen {
   min-height: 65vh;

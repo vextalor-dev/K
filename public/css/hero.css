@@ -17,6 +17,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
+  background-color: var(--surface-2, #141922);
 }
 
 .hero-backdrop img {
@@ -178,19 +179,24 @@
   height: 2px;
   border-radius: 2px;
   background: rgba(238, 241, 246, 0.22);
+  background: color-mix(in srgb, var(--text) 22%, transparent);
   border: none;
   cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(5, 7, 10, 0.3);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg) 30%, transparent);
   transition: background 0.3s ease, width 0.3s ease;
 }
 
 .hero-dot:hover {
   background: rgba(238, 241, 246, 0.4);
+  background: color-mix(in srgb, var(--text) 45%, transparent);
 }
 
 .hero-dot.active {
   width: 44px;
   background: var(--primary);
-  box-shadow: 0 0 12px var(--accent-glow);
+  box-shadow: 0 0 0 1px rgba(5, 7, 10, 0.3), 0 0 12px var(--accent-glow);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg) 30%, transparent), 0 0 12px var(--accent-glow);
 }
 
 /* hero loading / error states */

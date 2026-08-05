@@ -30,6 +30,12 @@ export function renderFooter(root) {
             ${isAndroid ? `<a href="${APK.url}" download="${APK.fileName}">Download TV App</a>` : ''}
           </div>
         </div>
+        <button type="button" class="footer-backtotop" aria-label="Back to top">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+          Back to top
+        </button>
         <div class="footer-disclaimer">
           This product uses the TMDB API but is not endorsed or certified by TMDB. All metadata and images are provided by The Movie Database (TMDB). Streaming is provided by third-party embed services.
         </div>
@@ -39,4 +45,7 @@ export function renderFooter(root) {
       </div>
     </div>
   `;
+  root.querySelector('.footer-backtotop')?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 }

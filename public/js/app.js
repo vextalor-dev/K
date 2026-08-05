@@ -27,6 +27,12 @@ const errorRoot = () => $('#error-root');
 
 let currentRoute = null;
 
+// Decode hash query values without crashing on malformed percent-encoding
+// (e.g. hand-edited URLs like "#/search=100%" or "#/browse=28&title=50%").
+const safeDecode = (s) => {
+  try { return decodeURIComponent(s); } catch { return s; }
+};
+
 // ---------------------------------------------------------------
 // Storage wipe (force-clear localStorage on every device once)
 // ---------------------------------------------------------------
@@ -96,7 +102,7 @@ async function route() {
   } else if (path === 'search' || path.startsWith('search=')) {
     currentRoute = 'search';
     setNavActive('/search');
-    const q = path.startsWith('search=') ? decodeURIComponent(path.slice(7)) : '';
+    const q = path.startsWith('search=') ? safeDecode(path.slice(7)) : '';
     document.title = q ? `Search: ${q} · K` : 'Search · K';
     renderSearch(appRoot(), q);
   } else if (path === 'new') {
@@ -146,8 +152,8 @@ async function route() {
     setNavActive('');
     const m = path.match(/^browse=(\d+)&title=(.*)$/);
     if (m) {
-      document.title = `${decodeURIComponent(m[2])} · K`;
-      await renderGenreBrowse(Number(m[1]), decodeURIComponent(m[2]));
+      document.title = `${safeDecode(m[2])} · K`;
+      await renderGenreBrowse(Number(m[1]), safeDecode(m[2]));
     }
   } else if (path === 'latest') {
     currentRoute = 'latest';

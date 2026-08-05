@@ -173,8 +173,12 @@ async function loadEpisodes(listEl, tvId, seasonNum, isCurrent) {
     const data = await api.seasonInfo(tvId, seasonNum);
     if (!isCurrent()) return;
     const eps = data.episodes || [];
-    listEl.innerHTML = eps.map(ep => `
-      <div class="episode-row" data-season="${seasonNum}" data-ep="${ep.episode_number}" tabindex="0">
+    const rec = readProgress('tv', tvId);
+    const active = (s, e) => !!(rec && Number(rec.season) === s && Number(rec.episode) === e);
+    listEl.innerHTML = eps.map(ep => {
+      const nowPlaying = active(seasonNum, ep.episode_number);
+      return `
+      <div class="episode-row${nowPlaying ? ' playing' : ''}" data-season="${seasonNum}" data-ep="${ep.episode_number}" tabindex="0"${nowPlaying ? ' aria-current="true"' : ''}>
         <div class="ep-thumb">
           ${ep.still_path ? `<img src="https://image.tmdb.org/t/p/w300${ep.still_path}" alt="" loading="lazy">` : '<div class="card-fallback"></div>'}
           <div class="ep-play">${icon('play')}</div>
@@ -183,12 +187,14 @@ async function loadEpisodes(listEl, tvId, seasonNum, isCurrent) {
           <div class="ep-head">
             <span class="ep-num">${ep.episode_number}</span>
             <span class="ep-name">${esc(ep.name || '')}</span>
+            ${nowPlaying ? `<span class="ep-playing">${icon('play')} Playing</span>` : ''}
             ${ep.runtime ? `<span class="ep-runtime">${ep.runtime}m</span>` : ''}
           </div>
           <p class="ep-overview">${esc(ep.overview || '')}</p>
         </div>
       </div>
-    `).join('') || '<div class="episode-empty">No episodes available.</div>';
+    `;
+    }).join('') || '<div class="episode-empty">No episodes available.</div>';
 
     $$('.episode-row', listEl).forEach(row => {
       const play = () => {
@@ -208,7 +214,7 @@ function openTrailer(key) {
   const ov = document.createElement('div');
   ov.className = 'modal-overlay';
   ov.innerHTML = `
-    <div class="modal-panel" style="width:min(880px, 94vw)">
+    <div class="modal-panel" style="width:min(880px, 94vw)" role="dialog" aria-modal="true" aria-label="Trailer">
       <button class="modal-close" aria-label="Close">${icon('close')}</button>
       <div class="modal-media" style="aspect-ratio:16/9">
         <iframe src="${trailerUrl(key)}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
@@ -230,6 +236,7 @@ function openTrailer(key) {
   window.addEventListener('hashchange', cleanup);
   document.body.style.overflow = 'hidden';
   document.body.appendChild(ov);
+  ov.querySelector('.modal-close').focus();
 }
 
 function refreshListBtn(btn, id, type) {
