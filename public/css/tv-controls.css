@@ -7,6 +7,12 @@
 /* --- focus rings: Netflix white ring, no default outline --- */
 body.tv-mode :focus { outline: none; }
 
+/* hide-on-scroll must never hide the header in TV mode (spatial nav relies
+   on it being reachable, and isVisible() skips `.nav-hidden` anyway) */
+body.tv-mode .nav {
+  transform: none;
+}
+
 body.tv-mode :focus-visible,
 body.tv-mode button:focus,
 body.tv-mode a:focus,

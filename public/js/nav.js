@@ -129,6 +129,16 @@ function bindScroll() {
       lastY = y;
     });
   });
+
+  // After a route change the page scrolls to top; if the window was already
+  // at scrollY 0 no scroll event fires, so the header could stay hidden from
+  // the previous page's scroll state. Reset on every hashchange.
+  window.addEventListener('hashchange', () => {
+    lastY = 0;
+    navHidden = false;
+    const root = navRoot();
+    if (root) root.classList.remove('nav-hidden');
+  });
 }
 
 function bindSearch() {
@@ -184,6 +194,11 @@ function closeNavOverlays() {
   }
   if (searchOpen || (searchDrop && searchDrop.classList.contains('open'))) {
     closeSearch();
+  }
+  if (mobileOpen) {
+    mobileOpen = false;
+    const menuEl = $('.mobile-menu');
+    if (menuEl) menuEl.remove();
   }
 }
 

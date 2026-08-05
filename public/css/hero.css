@@ -201,18 +201,33 @@
 
 /* hero loading / error states */
 .hero-loading {
-  min-height: 85vh;
-  max-height: 100vh;
+  height: 85vh;
   min-height: 420px;
+  max-height: 100vh;
   background: linear-gradient(180deg, #0a0d12 0%, var(--bg) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.hero-loading::after {
+  content: "";
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: k-spin 0.85s linear infinite;
+}
+
 /* responsive */
 @media (max-width: 768px) {
   .hero {
+    height: 70vh;
+    min-height: 380px;
+  }
+
+  .hero-loading {
     height: 70vh;
     min-height: 380px;
   }

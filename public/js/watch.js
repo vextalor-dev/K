@@ -30,12 +30,19 @@ let playerDuration = Infinity;
 let lastSeekReload = 0;
 let toastTimer = null;
 
+const VIDKING_ORIGIN = 'https://www.vidking.net';
+
 export function renderWatch(root) {
+  // Self-heal: if renderWatch is ever called twice without an intervening
+  // destroy (e.g. bfcache/back-forward restores), drop the previous
+  // instance's listeners, timers and iframe first.
+  destroyWatch();
+
   const params = qs();
-  const type = params.type || 'movie';
+  const type = params.type === 'tv' ? 'tv' : 'movie';
   const id = Number(params.id);
 
-  if (!id) { showError(root, 'Invalid media ID.'); return; }
+  if (!Number.isInteger(id) || id <= 0) { showError(root, 'Invalid media ID.'); return; }
 
   document.body.classList.add('watch-mode');
 
@@ -177,10 +184,16 @@ export function renderWatch(root) {
     if (!/^https:\/\/([a-z0-9-]+\.)?vidking\.net$/.test(e.origin)) return;
     try {
       const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-      const evt = data && data.type === 'PLAYER_EVENT' ? (data.data || {}) : data;
-      if (!evt || evt.currentTime == null || evt.duration == null) return;
-      if (Number.isFinite(evt.currentTime)) playerTime = evt.currentTime;
-      if (Number.isFinite(evt.duration)) playerDuration = evt.duration;
+      if (!data || typeof data !== 'object') return;
+      const evt = data.type === 'PLAYER_EVENT' && data.data && typeof data.data === 'object'
+        ? data.data
+        : data;
+      // The embed is a third party we don't control - validate every field
+      // type before trusting it.
+      if (typeof evt.currentTime !== 'number' || !Number.isFinite(evt.currentTime) || evt.currentTime < 0) return;
+      if (typeof evt.duration !== 'number' || !Number.isFinite(evt.duration) || evt.duration <= 0) return;
+      playerTime = evt.currentTime;
+      playerDuration = evt.duration;
       if (subOn && subEl && subCues.length) renderCaption(evt.currentTime + subOffset);
       const prog = evt.currentTime / evt.duration;
       const now = Date.now();
@@ -398,7 +411,7 @@ export function playerSeek(delta) {
   try {
     iframeEl.contentWindow.postMessage(
       { type: 'PLAYER_COMMAND', data: { action: 'seek', to: Math.floor(target) } },
-      '*',
+      VIDKING_ORIGIN,
     );
   } catch {}
 
@@ -452,7 +465,10 @@ export function destroyWatch() {
     document.removeEventListener('keydown', escHandler);
     escHandler = null;
   }
-  iframeEl = null;
+  if (iframeEl) {
+    iframeEl.remove();
+    iframeEl = null;
+  }
   playerTime = 0;
   playerDuration = Infinity;
   lastSeekReload = 0;

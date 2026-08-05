@@ -33,7 +33,7 @@ export function renderSearch(root, query = '') {
         <input class="search-page-input" type="text" placeholder="Search titles, people, genres..." value="${esc(query)}" autofocus>
         <button class="search-page-clear" aria-label="Clear">${icon('close')}</button>
       </div>
-      <div class="search-section-title heading-trail" id="search-section-title"></div>
+      <h1 class="search-section-title heading-trail" id="search-section-title"></h1>
       <div id="search-content"></div>
     </div>
   `;
@@ -148,9 +148,9 @@ const doSearch = debounce(async (root, content, sectionTitle, q) => {
   }
 
   sectionTitle.textContent = 'Search Results';
-  content.innerHTML = '<div class="grid-page"><div class="layout-container"><div class="grid">' +
-    Array.from({ length: 12 }, () => '<div class="card-skeleton"></div>').join('') +
-    '</div></div></div>';
+  content.innerHTML = '<div class="grid grid-skeleton">' +
+    Array.from({ length: 12 }, () => '<div class="card-skeleton" aria-hidden="true" tabindex="-1"></div>').join('') +
+    '</div>';
 
   try {
     const data = await api.searchMulti(q);
@@ -178,6 +178,7 @@ const doSearch = debounce(async (root, content, sectionTitle, q) => {
       card.className = 'result-card';
       card.tabIndex = 0;
       card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', title);
       card.innerHTML = `
         <img src="${img}" alt="${esc(title)}" loading="lazy" referrerpolicy="no-referrer">
         <div class="rc-body">

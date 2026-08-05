@@ -1,13 +1,15 @@
 // ============================================================
 // NetflixX server configuration
 // ------------------------------------------------------------
-// 1. Get a free TMDB API key:  https://www.themoviedb.org/settings/api
-// 2. Paste it below inside the quotes (server-side only - the
-//    browser never sees this key; all calls go through the proxy)
-// 3. Run `npm install` then `npm start` and open http://localhost:3000
+// The TMDB API key is read ONLY from the TMDB_API_KEY environment
+// variable. It is intentionally NOT hardcoded here (never commit
+// real credentials to a git repository).
+//   - Vercel: Project -> Settings -> Environment Variables -> TMDB_API_KEY
+//   - Local:  $env:TMDB_API_KEY="your-key-here"; npm start
+// The browser never sees this key; all calls go through the proxy.
 // ============================================================
 
-const TMDB_API_KEY = process.env.TMDB_API_KEY || '7f1744eb03153962f13f178d89036a40';
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
 const PORT = process.env.PORT || 3000;
 

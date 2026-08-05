@@ -47,17 +47,31 @@ export const toggle = (item) => {
 // reactions (like / dislike) - key: nkx-reactions = { "movie:123": "like" }
 const REACTIONS_KEY = 'nkx-reactions';
 
-export const getReaction = (id, type) => load(REACTIONS_KEY, {})[`${type}:${id}`] || null;
+// Guard against corrupted/tampered storage (non-object JSON) so a bad
+// value under one key can never crash a page render.
+const safeObject = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+
+export const getReaction = (id, type) => {
+  try {
+    return safeObject(load(REACTIONS_KEY, {}))[`${type}:${id}`] || null;
+  } catch {
+    return null;
+  }
+};
 
 export const setReaction = (id, type, value) => {
-  const all = load(REACTIONS_KEY, {});
-  all[`${type}:${id}`] = value;
-  save(REACTIONS_KEY, all);
+  try {
+    const all = safeObject(load(REACTIONS_KEY, {}));
+    const key = `${type}:${id}`;
+    if (value == null) delete all[key];
+    else all[key] = value;
+    save(REACTIONS_KEY, all);
+  } catch {}
 };
 
 export const likedItems = () => {
   try {
-    return Object.entries(load(REACTIONS_KEY, {}))
+    return Object.entries(safeObject(load(REACTIONS_KEY, {})))
       .filter(([, v]) => v === 'like')
       .map(([k]) => {
         const [type, id] = k.split(':');
@@ -72,14 +86,24 @@ export const likedItems = () => {
 // Notify Me toggles for New & Popular
 const NOTIFY_KEY = 'nkx-notify';
 
-export const isNotified = (id) => load(NOTIFY_KEY, []).includes(id);
+export const isNotified = (id) => {
+  try {
+    const list = load(NOTIFY_KEY, []);
+    return Array.isArray(list) && list.includes(id);
+  } catch {
+    return false;
+  }
+};
 
 export const toggleNotify = (id) => {
-  const list = load(NOTIFY_KEY, []);
-  const i = list.indexOf(id);
-  if (i >= 0) list.splice(i, 1);
-  else list.push(id);
-  save(NOTIFY_KEY, list);
+  try {
+    const list = load(NOTIFY_KEY, []);
+    if (!Array.isArray(list)) return;
+    const i = list.indexOf(id);
+    if (i >= 0) list.splice(i, 1);
+    else list.push(id);
+    save(NOTIFY_KEY, list);
+  } catch {}
 };
 
 export const count = () => getList().length;

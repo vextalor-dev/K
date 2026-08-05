@@ -179,6 +179,7 @@
 /* ---- My List grid card ---- */
 .grid-card {
   position: relative;
+  aspect-ratio: 2 / 3;
   border-radius: 10px;
   overflow: hidden;
   background: var(--surface-1);
@@ -259,6 +260,13 @@
 .grid-card .gc-remove .icon {
   width: 14px;
   height: 14px;
+}
+
+/* touch devices have no hover: keep the remove button reachable */
+@media (hover: none) {
+  .grid-card .gc-remove {
+    display: flex;
+  }
 }
 
 /* ---- peek panel (simplified — used by modal/detail, NOT hovered cards) ---- */

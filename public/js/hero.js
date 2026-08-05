@@ -14,6 +14,7 @@ let timer = null;
 let root = null;
 let destroyed = true;
 let preloadLink = null;
+let generation = 0;
 
 function addPreloadLink(url) {
   const link = document.createElement('link');
@@ -33,25 +34,27 @@ function removePreloadLink() {
 export function renderHero(targetRoot) {
   root = targetRoot;
   destroyed = false;
+  const gen = ++generation;
   root.innerHTML = '<div class="hero-loading"></div>';
-  loadHeroItems();
+  loadHeroItems(gen);
 }
 
-async function loadHeroItems() {
+async function loadHeroItems(gen) {
   try {
     const data = await api.trending('all', 'week');
-    if (destroyed) return;
+    if (destroyed || gen !== generation) return;
     items = (data.results || []).filter(i => i.backdrop_path && i.vote_average > 4.5).slice(0, 5);
     if (!items.length) { root.innerHTML = ''; return; }
     build();
     startRotation();
   } catch {
-    if (destroyed) return;
+    if (destroyed || gen !== generation) return;
     root.innerHTML = '';
   }
 }
 
 function build() {
+  removePreloadLink();
   root.innerHTML = `
     <div class="hero">
       <div class="hero-layers"></div>
@@ -81,7 +84,7 @@ function build() {
   items.forEach((item, i) => {
     const layer = document.createElement('div');
     layer.className = 'hero-layer' + (i === 0 ? ' active' : '');
-    const eager = i === 0 ? ' fetchpriority="high" decoding="async"' : '';
+    const eager = i === 0 ? ' fetchpriority="high" decoding="async"' : ' loading="lazy" decoding="async"';
     layer.innerHTML = `<div class="hero-backdrop"><img src="${backdropOf(item, 'original')}" alt="" draggable="false"${eager}></div>`;
     layers.appendChild(layer);
     if (i === 1) {
@@ -167,6 +170,7 @@ function showContent(i) {
 
 function startRotation() {
   stopRotation();
+  if (items.length < 2) return;
   timer = setInterval(() => {
     goTo((idx + 1) % items.length);
   }, ROTATION_MS);
@@ -178,6 +182,7 @@ function stopRotation() {
 
 export function destroy() {
   destroyed = true;
+  generation++;
   stopRotation();
   removePreloadLink();
   items = [];

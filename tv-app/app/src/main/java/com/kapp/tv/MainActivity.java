@@ -37,6 +37,12 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
         webView.setBackgroundColor(0xFF000000);
+        // Ensure the WebView is the focus target so D-pad/remote key
+        // events reach the page (the site's TV remote handling depends
+        // on document-level keydown events).
+        webView.setFocusable(true);
+        webView.setFocusableInTouchMode(true);
+        webView.requestFocus();
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);

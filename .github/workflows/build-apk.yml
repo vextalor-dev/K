@@ -8,9 +8,13 @@ on:
       - '.github/workflows/build-apk.yml'
 
 env:
-  KEYSTORE_PASSWORD: ktv-release-key
-  KEY_ALIAS: ktv
-  KEY_PASSWORD: ktv-release-key
+  # Signing credentials. Read from GitHub Secrets when present; fall back
+  # to the placeholder so the workflow still runs for throwaway builds.
+  # Configure real values (KEYSTORE_PATH / KEYSTORE_PASSWORD / KEY_ALIAS /
+  # KEY_PASSWORD) in the repo Settings -> Secrets before going public.
+  KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'ktv-release-key' }}
+  KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'ktv' }}
+  KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'ktv-release-key' }}
 
 jobs:
   build:

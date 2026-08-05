@@ -8,7 +8,7 @@ import * as api from './api.js';
 import { ANIME_IDS, GENRES, LANGUAGES } from './config.js';
 import { renderNav, renderDock, setNavActive } from './nav.js';
 import { renderHero, destroy as destroyHero } from './hero.js';
-import { buildRow, buildApiRow, buildGrid, buildGridSkeleton } from './rows.js';
+import { buildRow, buildApiRow, buildGrid } from './rows.js';
 import { makeGridCard, openDetail } from './card.js';
 import { renderSearch } from './search.js';
 import { renderFooter } from './footer.js';
@@ -69,6 +69,10 @@ async function route() {
 
   // Watch page (query-routed by Express)
   if (location.pathname === '/watch') {
+    // A hashchange (e.g. hand-edited URL) while already on /watch re-runs this
+    // branch. Tear down the previous player first so its document/window
+    // listeners (message, mousemove, touchstart, keydown) aren't re-bound.
+    if (currentRoute === 'watch') destroyWatch();
     currentRoute = 'watch';
     appRoot().style.display = 'none';
     footerRoot().style.display = 'none';
@@ -145,6 +149,7 @@ async function route() {
     if (Number.isInteger(id) && id > 0) {
       await renderDetail(appRoot(), type, id);
     } else {
+      document.title = 'Title Not Found · K';
       showError('Invalid Title', 'The title you are looking for does not exist.');
     }
   } else if (path.startsWith('browse=')) {
@@ -152,8 +157,9 @@ async function route() {
     setNavActive('');
     const m = path.match(/^browse=(\d+)&title=(.*)$/);
     if (m) {
-      document.title = `${safeDecode(m[2])} · K`;
-      await renderGenreBrowse(Number(m[1]), safeDecode(m[2]));
+      const browseTitle = safeDecode(m[2]) || 'Browse';
+      document.title = `${browseTitle} · K`;
+      await renderGenreBrowse(Number(m[1]), browseTitle);
     }
   } else if (path === 'latest') {
     currentRoute = 'latest';
@@ -479,6 +485,26 @@ function showError(title, msg) {
     </div>
   `;
 }
+
+// Last-resort fallback so a runtime failure never leaves a blank page.
+// `error` events from failed resource loads carry no `message`, so those
+// are ignored; only script exceptions / unhandled rejections land here.
+function showFatalError(msg) {
+  const root = appRoot();
+  if (!root) return;
+  const watch = watchRoot();
+  if (watch) watch.classList.add('hidden');
+  root.style.display = '';
+  root.innerHTML = `
+    <div class="error-screen layout-container">
+      <h2>Something went wrong</h2>
+      <p>${esc(msg || 'An unexpected error occurred. Please try again.')}</p>
+      <button class="btn btn-play" onclick="window.location.hash='#/'">Back to Home</button>
+    </div>
+  `;
+}
+window.addEventListener('error', (e) => { if (e && e.message) showFatalError(e.message); });
+window.addEventListener('unhandledrejection', () => { showFatalError(); });
 
 // ---------------------------------------------------------------
 // Boot

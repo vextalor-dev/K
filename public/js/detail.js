@@ -26,10 +26,10 @@ export async function renderDetail(root, type, id) {
 
     if (stale()) return;
 
-    const genres = await api.loadGenres();
+    const genres = await api.loadGenres().catch(() => ({}));
     if (stale()) return;
 
-    const genreNames = api.genreNames(det.genres || [], genres);
+    const genreNames = api.genreNames((det.genres || []).map((g) => g.id), genres);
     const title = titleOf(det);
     const year = yearOf(det);
     const rating = matchPct(det.vote_average);
@@ -127,6 +127,7 @@ export async function renderDetail(root, type, id) {
     }
 
   } catch {
+    if (stale()) return;
     root.innerHTML = `
       <div class="error-screen">
         <h2>Something went wrong</h2>
@@ -164,7 +165,8 @@ async function loadSeasons(container, det) {
     const seq = ++pending;
     loadEpisodes(list, det.id, Number(sel.value), () => seq === pending);
   });
-  loadEpisodes(list, det.id, startSeason, () => true);
+  // initial load is only current while no season change has happened
+  loadEpisodes(list, det.id, startSeason, () => pending === 0);
 }
 
 async function loadEpisodes(listEl, tvId, seasonNum, isCurrent) {
@@ -211,25 +213,44 @@ async function loadEpisodes(listEl, tvId, seasonNum, isCurrent) {
 }
 
 function openTrailer(key) {
+  const trigger = document.activeElement;
   const ov = document.createElement('div');
   ov.className = 'modal-overlay';
   ov.innerHTML = `
     <div class="modal-panel" style="width:min(880px, 94vw)" role="dialog" aria-modal="true" aria-label="Trailer">
       <button class="modal-close" aria-label="Close">${icon('close')}</button>
       <div class="modal-media" style="aspect-ratio:16/9">
-        <iframe src="${trailerUrl(key)}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+        <iframe src="${trailerUrl(key)}" title="Trailer" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
       </div>
     </div>
   `;
 
+  const panel = $('.modal-panel', ov);
   const prevOverflow = document.body.style.overflow;
   const cleanup = () => {
     ov.remove();
     document.body.style.overflow = prevOverflow;
     window.removeEventListener('keydown', onKey);
     window.removeEventListener('hashchange', cleanup);
+    if (trigger && typeof trigger.focus === 'function' && trigger.isConnected) trigger.focus();
   };
-  const onKey = (e) => { if (e.key === 'Escape') cleanup(); };
+  const onKey = (e) => {
+    if (e.key === 'Escape') { cleanup(); return; }
+    if (e.key === 'Tab') {
+      const focusables = $$('button, a[href], iframe, [tabindex]:not([tabindex="-1"])', panel)
+        .filter(el => !el.disabled);
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === panel)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
   ov.addEventListener('click', (e) => { if (e.target === ov) cleanup(); });
   ov.querySelector('.modal-close').addEventListener('click', cleanup);
   window.addEventListener('keydown', onKey);

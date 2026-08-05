@@ -87,8 +87,14 @@ export async function buildApiRow(container, { title, promise, load, type, opts 
       </div>
     `;
     $('.btn-retry', track).addEventListener('click', () => {
-      showSkeleton();
-      loadRow();
+      if (typeof load === 'function') {
+        // `load` can mint a fresh promise so we can re-run the fetch in place.
+        showSkeleton();
+        loadRow();
+      } else {
+        // Promise-only rows can't re-run their fetch; reload to retry.
+        window.location.reload();
+      }
     });
   };
 

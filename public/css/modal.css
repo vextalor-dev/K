@@ -315,4 +315,8 @@
   .episode-row .ep-thumb {
     flex-basis: 110px;
   }
+
+  .modal-body {
+    padding: 18px 14px 26px;
+  }
 }

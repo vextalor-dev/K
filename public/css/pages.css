@@ -145,6 +145,49 @@ body.kids-mode .watch-title {
 }
 
 /* ---------- title detail page ---------- */
+.detail-poster-area {
+  flex-shrink: 0;
+}
+
+.detail-poster {
+  width: clamp(120px, 11vw, 170px);
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+h1.detail-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.6vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.detail-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.detail-genre {
+  padding: 5px 12px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-strong);
+  background: var(--glass-subtle-bg);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-hi);
+}
+
+.detail-similar-section {
+  margin-top: 2vh;
+}
+
 .detail-facts {
   display: flex;
   flex-direction: column;
@@ -218,11 +261,14 @@ body.kids-mode .watch-title {
   line-height: 1.55;
   max-width: 700px;
   color: rgba(238, 241, 246, 0.78);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   margin-top: 12px;
+}
+
+.episode-empty {
+  padding: 2vh 0;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text-mid);
 }
 
 .detail-seasons {
@@ -340,5 +386,17 @@ body.kids-mode .watch-title {
 @media (max-width: 768px) {
   .np-coming-grid {
     grid-template-columns: 1fr;
+  }
+
+  .detail-back {
+    top: calc(var(--nav-h) + 1.5vh);
+  }
+
+  .error-screen {
+    padding: calc(var(--nav-h) + 6vh) 16px 8vh;
+  }
+
+  .detail-poster {
+    width: 120px;
   }
 }

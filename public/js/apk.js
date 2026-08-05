@@ -1,13 +1,28 @@
 // ============================================================
 // K - apk.js
 // Offers the K TV Android APK download to Android devices.
-// Auto-triggers once per APK version (so it does not re-download
-// on every visit) and shows where the file was saved.
+// Auto-triggers once per APK file change (fingerprint) so it does
+// not re-download on every visit but DOES re-offer after an update.
 // ============================================================
 
 import { APK } from './config.js';
 
-const STORE_KEY = `k-apk-dl-${APK.version}`;
+// Stable-enough fingerprint of the hosted APK: last-modified + size.
+// Falls back to the declared version when the network/files can't be
+// checked (e.g. offline), so a broken HEAD never blocks the offer.
+async function fileFingerprint() {
+  try {
+    const res = await fetch(APK.url, { method: 'HEAD' });
+    if (!res.ok) return null;
+    const len = res.headers.get('Content-Length') || '';
+    const lm = res.headers.get('Last-Modified') || '';
+    return (len + ':' + lm) || null;
+  } catch {
+    return null;
+  }
+}
+
+const STORE_KEY = (fp) => `k-apk-dl-${fp || APK.version}`;
 
 function isAndroid() {
   return /Android/i.test(navigator.userAgent);
@@ -55,13 +70,21 @@ function showBanner(saved) {
   document.getElementById('k-apk-close').addEventListener('click', () => banner.remove());
 }
 
-export function maybeOfferApk() {
+export async function maybeOfferApk() {
   if (!isAndroid()) return;
 
-  const saved = localStorage.getItem(STORE_KEY) === '1';
+  let saved = false;
+  let fp = null;
+  try {
+    fp = await fileFingerprint();
+    saved = localStorage.getItem(STORE_KEY(fp)) === '1';
+  } catch {
+    saved = false;
+  }
+
   if (!saved) {
     triggerDownload(APK.url);
-    try { localStorage.setItem(STORE_KEY, '1'); } catch {}
+    try { localStorage.setItem(STORE_KEY(fp), '1'); } catch {}
   }
   showBanner(saved);
 }

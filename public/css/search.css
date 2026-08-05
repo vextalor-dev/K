@@ -233,3 +233,9 @@ mark.hl {
   border-radius: 2px;
   padding: 0 1px;
 }
+
+@media (max-width: 480px) {
+  .search-results {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}

@@ -49,6 +49,9 @@ function isVisible(el) {
   if (!(el instanceof Element) || el.disabled) return false;
   if (el.getAttribute('aria-hidden') === 'true') return false;
   if (el.closest(SKIP_SEL)) return false;
+  // `.nav-hidden` only slides the header away with a transform, which does not
+  // change visibility/display/opacity — spatial nav must not focus it.
+  if (el.closest('.nav-hidden')) return false;
   const style = getComputedStyle(el);
   if (style.display === 'none' || style.visibility === 'hidden') return false;
   if (style.opacity === '0') return false;
@@ -273,13 +276,16 @@ export function initTvControls() {
 
   // force TV mode for testing: open the site with ?tv=1
   const forceTv = (location.search || '').includes('tv=1');
-  if (detectTv() || forceTv) {
+  const tvDevice = detectTv() || forceTv;
+  if (tvDevice) {
     document.body.classList.add('tv-mode');
     $$('[autofocus]').forEach(el => el.removeAttribute('autofocus'));
   }
 
   const markPointer = () => { sawPointer = true; };
-  const exitTvOnPointer = () => { sawPointer = true; exitTvMode(); };
+  // On a real TV device, remotes/WebViews can synthesize mousedown for the OK
+  // button — exiting TV mode there would kill D-pad navigation on first press.
+  const exitTvOnPointer = () => { sawPointer = true; if (!tvDevice) exitTvMode(); };
   document.addEventListener('mousedown', exitTvOnPointer);
   document.addEventListener('touchstart', exitTvOnPointer, { passive: true });
   document.addEventListener('mousemove', markPointer, { passive: true });
