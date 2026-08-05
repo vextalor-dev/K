@@ -33,6 +33,28 @@ export const trailerUrl = (key, { autoplay = false, controls = true } = {}) => {
   return `https://www.youtube-nocookie.com/embed/${key}?${p.toString()}`;
 };
 
+// Local subtitle manifest: TMDB tv id -> { season, episodes: { ep: '/subs/...srt' } }
+// Files are voice-synced (official streaming release timings).
+export const SUBTITLES = {
+  229915: { // Night Has Come (2023)
+    season: 1,
+    episodes: {
+      1: '/subs/night-has-come/s01e01.srt',
+      2: '/subs/night-has-come/s01e02.srt',
+      3: '/subs/night-has-come/s01e03.srt',
+      4: '/subs/night-has-come/s01e04.srt',
+      5: '/subs/night-has-come/s01e05.srt',
+      6: '/subs/night-has-come/s01e06.srt',
+      7: '/subs/night-has-come/s01e07.srt',
+      8: '/subs/night-has-come/s01e08.srt',
+      9: '/subs/night-has-come/s01e09.srt',
+      10: '/subs/night-has-come/s01e10.srt',
+      11: '/subs/night-has-come/s01e11.srt',
+      12: '/subs/night-has-come/s01e12.srt',
+    },
+  },
+};
+
 export const ANIME_IDS = [
   { id: 37854, title: 'One Piece' },
   { id: 46260, title: 'Naruto' },
