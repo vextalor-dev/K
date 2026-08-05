@@ -26,6 +26,20 @@ const errorRoot = () => $('#error-root');
 let currentRoute = null;
 
 // ---------------------------------------------------------------
+// Storage wipe (force-clear localStorage on every device once)
+// ---------------------------------------------------------------
+const STORAGE_CLEAR_VERSION = 1;
+async function wipeStorageIfNeeded() {
+  try {
+    const marker = `nkx-storage-v${STORAGE_CLEAR_VERSION}`;
+    if (localStorage.getItem(marker)) return;
+    localStorage.clear();
+    localStorage.setItem(marker, '1');
+  } catch {}
+}
+window.addEventListener('DOMContentLoaded', wipeStorageIfNeeded);
+
+// ---------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------
 function init() {
