@@ -5,6 +5,14 @@
 
 export const APP_NAME = 'K';
 
+// K TV Android APK - published by .github/workflows/build-apk.yml to a GitHub Release
+export const APK = {
+  url: 'https://github.com/vextalor-dev/Potato/releases/latest/download/app-release.apk',
+  fileName: 'k-tv-release.apk',
+  version: '1.0.0',
+  savePath: '/storage/emulated/0/Download/',
+};
+
 export const VIDKING = {
   movie(id, opts = {}) {
     const p = new URLSearchParams({ color: 'dc2626', autoPlay: 'true' });

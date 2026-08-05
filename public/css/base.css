@@ -328,3 +328,85 @@ h1, h2, h3, h4, p { margin: 0; }
     flex-basis: 140px;
   }
 }
+
+/* APK download banner (Android / TV) */
+.apk-banner {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 24px;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.apk-banner-inner {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 460px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  color: var(--text);
+}
+
+.apk-banner-icon {
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.apk-banner-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.apk-banner-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-hi);
+}
+
+.apk-banner-text {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-mid);
+}
+
+.apk-banner-text b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.apk-banner-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.apk-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.apk-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-mid);
+}

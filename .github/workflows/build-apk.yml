@@ -15,6 +15,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -59,3 +61,15 @@ jobs:
         with:
           name: k-tv-release-apk
           path: tv-app/app/build/outputs/apk/release/*.apk
+
+      - name: Publish APK to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="ktv-latest"
+          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "$TAG" \
+            tv-app/app/build/outputs/apk/release/app-release.apk \
+            --title "K TV App" \
+            --notes "Latest K TV APK. Install on your Android TV (allow unknown sources)." \
+            --latest

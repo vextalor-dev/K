@@ -4,9 +4,10 @@
 // ============================================================
 
 import { icon } from './utils.js';
-import { APP_NAME } from './config.js';
+import { APP_NAME, APK } from './config.js';
 
 export function renderFooter(root) {
+  const isAndroid = /Android/i.test(navigator.userAgent);
   root.innerHTML = `
     <div class="footer">
       <div class="footer-inner layout-container">
@@ -26,6 +27,7 @@ export function renderFooter(root) {
             <a href="#/languages">Languages</a>
             <a href="#/kids">Kids</a>
             <a href="#/search">Search</a>
+            ${isAndroid ? `<a href="${APK.url}" download="${APK.fileName}">Download TV App</a>` : ''}
           </div>
         </div>
         <div class="footer-disclaimer">

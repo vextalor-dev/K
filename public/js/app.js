@@ -17,6 +17,7 @@ import { renderDetail } from './detail.js';
 import { getList, likedItems, isNotified, toggleNotify } from './mylist.js';
 import { continueWatchingItems } from './utils.js';
 import { GENRE_MOODS } from './config.js';
+import { maybeOfferApk } from './apk.js';
 
 const appRoot = () => $('#app-root');
 const watchRoot = () => $('#watch-root');
@@ -46,6 +47,7 @@ function init() {
   renderNav();
   renderDock();
   renderFooter(footerRoot());
+  maybeOfferApk();
   window.addEventListener('hashchange', route);
   route();
 }
