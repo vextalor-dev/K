@@ -62,7 +62,7 @@ export function renderWatch(root) {
           </div>
         </div>
       </div>
-      <div class="watch-caption" aria-live="polite"></div>
+      <div class="watch-caption"></div>
       <div class="watch-unavailable" style="display:none">
         <div class="watch-unavailable-inner">
           <h2>Source Unavailable</h2>
@@ -247,7 +247,7 @@ function parseSrt(text) {
     const idx = lines.indexOf(timeLine);
     const textLines = lines.slice(idx + 1).filter(l => !/^\d+$/.test(l));
     if (!textLines.length) continue;
-    cues.push({ start, end, text: textLines.join('\n') });
+    cues.push({ start, end, text: textLines.join('\n').replace(/<[^>]+>/g, '') });
   }
   return cues;
 }
@@ -277,8 +277,10 @@ function renderCaption(t) {
 
 function clearCaption() {
   if (!subEl) return;
-  subEl.textContent = '';
-  subEl.classList.remove('show');
+  if (subEl.textContent || subEl.classList.contains('show')) {
+    subEl.textContent = '';
+    subEl.classList.remove('show');
+  }
   activeCueIdx = -1;
 }
 
