@@ -5,10 +5,11 @@
 
 export const APP_NAME = 'K';
 
-// K TV Android APK - published by .github/workflows/build-apk.yml to a GitHub Release
+// K TV Android APK - committed to /apk/ by .github/workflows/build-apk.yml
+// Same-origin so the TV (opening this site) can download it without auth.
 export const APK = {
-  url: 'https://github.com/vextalor-dev/Potato/releases/latest/download/app-release.apk',
-  fileName: 'k-tv-release.apk',
+  url: '/apk/app-release.apk',
+  fileName: 'app-release.apk',
   version: '1.0.0',
   savePath: '/storage/emulated/0/Download/',
 };

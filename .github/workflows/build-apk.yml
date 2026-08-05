@@ -62,14 +62,16 @@ jobs:
           name: k-tv-release-apk
           path: tv-app/app/build/outputs/apk/release/*.apk
 
-      - name: Publish APK to GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Commit APK to site (public/apk/)
         run: |
-          TAG="ktv-latest"
-          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
-          gh release create "$TAG" \
-            tv-app/app/build/outputs/apk/release/app-release.apk \
-            --title "K TV App" \
-            --notes "Latest K TV APK. Install on your Android TV (allow unknown sources)." \
-            --latest
+          mkdir -p public/apk
+          cp tv-app/app/build/outputs/apk/release/app-release.apk public/apk/app-release.apk
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/apk/app-release.apk
+          if git diff --cached --quiet; then
+            echo "APK unchanged - nothing to commit"
+          else
+            git commit -m "build: update TV APK"
+            git push origin HEAD:main
+          fi

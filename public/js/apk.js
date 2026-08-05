@@ -13,18 +13,6 @@ function isAndroid() {
   return /Android/i.test(navigator.userAgent);
 }
 
-async function getLatestApkUrl() {
-  try {
-    const res = await fetch('https://api.github.com/repos/vextalor-dev/Potato/releases/latest');
-    if (!res.ok) return APK.url;
-    const rel = await res.json();
-    const asset = (rel.assets || []).find(a => a.name.endsWith('.apk'));
-    return asset ? asset.browser_download_url : APK.url;
-  } catch {
-    return APK.url;
-  }
-}
-
 function triggerDownload(url) {
   const a = document.createElement('a');
   a.href = url;
@@ -70,12 +58,10 @@ function showBanner(saved) {
 export function maybeOfferApk() {
   if (!isAndroid()) return;
 
-  getLatestApkUrl().then(url => {
-    const saved = localStorage.getItem(STORE_KEY) === '1';
-    if (!saved) {
-      triggerDownload(url);
-      try { localStorage.setItem(STORE_KEY, '1'); } catch {}
-    }
-    showBanner(saved);
-  });
+  const saved = localStorage.getItem(STORE_KEY) === '1';
+  if (!saved) {
+    triggerDownload(APK.url);
+    try { localStorage.setItem(STORE_KEY, '1'); } catch {}
+  }
+  showBanner(saved);
 }
