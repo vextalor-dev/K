@@ -21,7 +21,7 @@ import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
 
-    private static final String HOME_URL = "https://potato-ashy.vercel.app/";
+    private static final String HOME_URL = "https://k-movies.jo3.org/?tv=1";
 
     private WebView webView;
     private View customView;
