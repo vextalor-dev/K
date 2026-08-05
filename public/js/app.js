@@ -19,6 +19,7 @@ import { continueWatchingItems } from './utils.js';
 import { GENRE_MOODS } from './config.js';
 import { maybeOfferApk } from './apk.js';
 import { initTvControls, resetFocus } from './tv-controls.js';
+import { renderTerms, renderTermsOfUse } from './legal.js';
 
 const appRoot = () => $('#app-root');
 const watchRoot = () => $('#watch-root');
@@ -161,6 +162,16 @@ async function route() {
       document.title = `${browseTitle} · K`;
       await renderGenreBrowse(Number(m[1]), browseTitle);
     }
+  } else if (path === 'terms') {
+    currentRoute = 'terms';
+    setNavActive('');
+    document.title = 'Terms of Service · K';
+    renderTerms(appRoot());
+  } else if (path === 'terms-of-use') {
+    currentRoute = 'terms-of-use';
+    setNavActive('');
+    document.title = 'Terms of Use · K';
+    renderTermsOfUse(appRoot());
   } else if (path === 'latest') {
     currentRoute = 'latest';
     setNavActive('');

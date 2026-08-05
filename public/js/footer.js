@@ -27,6 +27,8 @@ export function renderFooter(root) {
             <a href="#/languages">Languages</a>
             <a href="#/kids">Kids</a>
             <a href="#/search">Search</a>
+            <a href="#/terms">Terms of Service</a>
+            <a href="#/terms-of-use">Terms of Use</a>
             ${isAndroid ? `<a href="${APK.url}" download="${APK.fileName}">Download TV App</a>` : ''}
           </div>
         </div>
