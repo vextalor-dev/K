@@ -112,6 +112,8 @@ const ICONS = {
   subtitles:   '<rect x="2" y="6" width="20" height="14" rx="2"/><path d="M6 11h4"/><path d="M14 11h4"/><path d="M6 15h8"/><path d="M16 15h2"/>',
   subLater:    '<path d="M12 6v12"/><path d="m8 10 4-4 4 4"/>',
   subEarlier:  '<path d="M12 6v12"/><path d="m8 14 4 4 4-4"/>',
+  skipBack:    '<polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/>',
+  skipFwd:     '<polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>',
 };
 
 export const icon = (name, cls = '') =>

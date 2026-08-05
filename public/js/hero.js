@@ -163,3 +163,11 @@ export function destroy() {
   items = [];
   idx = 0;
 }
+
+// TV remote support: slide the hero left/right (returns false when empty)
+export function heroSlide(dir) {
+  if (!items.length) return false;
+  const next = (idx + (dir > 0 ? 1 : -1) + items.length) % items.length;
+  goTo(next);
+  return true;
+}

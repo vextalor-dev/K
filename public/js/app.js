@@ -18,6 +18,7 @@ import { getList, likedItems, isNotified, toggleNotify } from './mylist.js';
 import { continueWatchingItems } from './utils.js';
 import { GENRE_MOODS } from './config.js';
 import { maybeOfferApk } from './apk.js';
+import { initTvControls, resetFocus } from './tv-controls.js';
 
 const appRoot = () => $('#app-root');
 const watchRoot = () => $('#watch-root');
@@ -48,6 +49,7 @@ function init() {
   renderDock();
   renderFooter(footerRoot());
   maybeOfferApk();
+  initTvControls();
   window.addEventListener('hashchange', route);
   route();
 }
@@ -161,6 +163,9 @@ async function route() {
 
   // scroll to top on route change
   window.scrollTo(0, 0);
+
+  // TV remote: focus the primary element for this route
+  resetFocus();
 }
 
 // ---------------------------------------------------------------

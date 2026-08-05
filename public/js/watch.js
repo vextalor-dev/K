@@ -22,6 +22,13 @@ let subEl = null;
 let ccBtn = null;
 let offsetLabel = null;
 
+// player state (mirrored from VidKing PLAYER_EVENT messages)
+let iframeEl = null;
+let playerTime = 0;
+let playerDuration = Infinity;
+let lastSeekReload = 0;
+let toastTimer = null;
+
 export function renderWatch(root) {
   const params = qs();
   const type = params.type || 'movie';
@@ -62,7 +69,12 @@ export function renderWatch(root) {
           </div>
         </div>
       </div>
+      <div class="watch-transport">
+        <button class="btn btn-glass watch-seek-back" aria-label="Rewind 10 seconds">${icon('skipBack')} 10</button>
+        <button class="btn btn-glass watch-seek-fwd" aria-label="Forward 10 seconds">10 ${icon('skipFwd')}</button>
+      </div>
       <div class="watch-caption"></div>
+      <div class="watch-toast"></div>
       <div class="watch-unavailable" style="display:none">
         <div class="watch-unavailable-inner">
           <h2>Source Unavailable</h2>
@@ -85,6 +97,10 @@ export function renderWatch(root) {
   const metaEl = $('.watch-meta', root);
   const descEl = $('.watch-desc', root);
   const iframe = $('.watch-iframe', root);
+  iframeEl = iframe;
+  playerTime = resumeSec;
+  playerDuration = Infinity;
+  lastSeekReload = 0;
   subEl = $('.watch-caption', root);
   ccBtn = $('.watch-cc', root);
   offsetLabel = $('.watch-sub-offset-val', root);
@@ -116,6 +132,10 @@ export function renderWatch(root) {
   subMinus?.addEventListener('click', () => { subOffset += 0.25; save(subOffKey, subOffset); updateOffsetUI(); });
   subPlus?.addEventListener('click', () => { subOffset -= 0.25; save(subOffKey, subOffset); updateOffsetUI(); });
 
+  // transport (rewind / forward 10s) — TV remote support
+  $('.watch-seek-back', root)?.addEventListener('click', () => playerSeek(-10));
+  $('.watch-seek-fwd', root)?.addEventListener('click', () => playerSeek(10));
+
   // back button
   backBtn.addEventListener('click', () => {
     window.history.back();
@@ -127,10 +147,13 @@ export function renderWatch(root) {
     backBtn.classList.add('show');
     const inner = $('.watch-subs-inner', root);
     if (inner) inner.classList.add('show');
+    const transport = $('.watch-transport', root);
+    if (transport) transport.classList.add('show');
     clearTimeout(controlsTimer);
     controlsTimer = setTimeout(() => {
       backBtn.classList.remove('show');
       if (inner) inner.classList.remove('show');
+      if (transport) transport.classList.remove('show');
     }, 3000);
   };
   mouseMoveHandler = showControls;
@@ -153,6 +176,8 @@ export function renderWatch(root) {
       const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
       const evt = data && data.type === 'PLAYER_EVENT' ? (data.data || {}) : data;
       if (!evt || evt.currentTime == null || evt.duration == null) return;
+      if (Number.isFinite(evt.currentTime)) playerTime = evt.currentTime;
+      if (Number.isFinite(evt.duration)) playerDuration = evt.duration;
       if (subOn && subEl && subCues.length) renderCaption(evt.currentTime + subOffset);
       const prog = evt.currentTime / evt.duration;
       const now = Date.now();
@@ -295,6 +320,51 @@ function updateOffsetUI() {
   }
 }
 
+// ---------------------------------------------------------------
+// TV remote transport: ±10s seek
+// VidKing's embed only *sends* PLAYER_EVENT postMessages (no inbound
+// command API), so a reliable seek is done by reloading the embed with
+// an updated `progress` param (same mechanism as resume-on-load).
+// ---------------------------------------------------------------
+export function playerSeek(delta) {
+  if (!iframeEl) return;
+  const base = Number.isFinite(playerTime) ? playerTime : 0;
+  const cap = Number.isFinite(playerDuration) ? playerDuration : base + 600;
+  const target = Math.max(0, Math.min(base + delta, cap));
+
+  showToast(`${delta > 0 ? '+' : '-'}10s`);
+
+  // best-effort command (harmless if the embed ignores it)
+  try {
+    iframeEl.contentWindow.postMessage(
+      { type: 'PLAYER_COMMAND', data: { action: 'seek', to: Math.floor(target) } },
+      '*',
+    );
+  } catch {}
+
+  seekViaReload(Math.floor(target));
+}
+
+function seekViaReload(target) {
+  const now = Date.now();
+  if (now - lastSeekReload < 1200) return;
+  lastSeekReload = now;
+  try {
+    const url = new URL(iframeEl.src);
+    url.searchParams.set('progress', String(target));
+    iframeEl.src = url.toString();
+  } catch {}
+}
+
+function showToast(msg) {
+  const t = $('.watch-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1100);
+}
+
 export function destroyWatch() {
   document.body.classList.remove('watch-mode');
   subCues = [];
@@ -322,4 +392,10 @@ export function destroyWatch() {
     document.removeEventListener('keydown', escHandler);
     escHandler = null;
   }
+  iframeEl = null;
+  playerTime = 0;
+  playerDuration = Infinity;
+  lastSeekReload = 0;
+  clearTimeout(toastTimer);
+  toastTimer = null;
 }
