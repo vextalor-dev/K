@@ -37,6 +37,10 @@ let loopDrops = 0;
 let lastLoopReport = 0;
 let lastSeekTs = 0;
 
+// seek state (command-first, reload fallback, verified via PLAYER_EVENT)
+let pendingSeek = null;        // { target, at }
+let seekReloadPending = false;
+
 const VIDKING_ORIGIN = 'https://www.vidking.net';
 
 export function renderWatch(root) {
@@ -121,6 +125,8 @@ export function renderWatch(root) {
   lastSeekTs = Date.now();
   lastEventTime = -1;
   loopDrops = 0;
+  pendingSeek = null;
+  seekReloadPending = false;
   subEl = $('.watch-caption', root);
   ccBtn = $('.watch-cc', root);
   offsetLabel = $('.watch-sub-offset-val', root);
@@ -204,6 +210,25 @@ export function renderWatch(root) {
       if (typeof evt.duration !== 'number' || !Number.isFinite(evt.duration) || evt.duration <= 0) return;
       playerTime = evt.currentTime;
       playerDuration = evt.duration;
+
+      // seek verification: did we land at the target?
+      if (pendingSeek) {
+        const dt = Date.now() - pendingSeek.at;
+        if (Math.abs(evt.currentTime - pendingSeek.target) < 5) {
+          // command worked (or reload landed) - seek is done
+          pendingSeek = null;
+          seekReloadPending = false;
+        } else if (dt > 3000 && !seekReloadPending) {
+          // events keep streaming but never near the target, and no
+          // reload is in flight - the command was ignored
+          reportEvent('seek-failed', {
+            message: 'Seek command ignored, reload did not run.',
+            target: pendingSeek.target, time: evt.currentTime, duration: evt.duration,
+            url: iframeEl && iframeEl.src,
+          });
+          pendingSeek = null;
+        }
+      }
 
       // loop detection: the player keeps jumping backward without a seek
       // (matches the "stuck bouncing between 11 and 12 seconds" bug).
@@ -428,9 +453,11 @@ function updateOffsetUI() {
 
 // ---------------------------------------------------------------
 // TV remote transport: ±10s seek
-// VidKing's embed only *sends* PLAYER_EVENT postMessages (no inbound
-// command API), so a reliable seek is done by reloading the embed with
-// an updated `progress` param (same mechanism as resume-on-load).
+// VidKing's embed sends PLAYER_EVENT postMessages; it *may* also
+// accept PLAYER_COMMAND seeks. Strategy: send the lightweight command
+// first and verify via PLAYER_EVENT. Only if that is ignored do we
+// fall back to reloading the embed with an updated `progress` param
+// (which can interrupt playback, so it is a last resort).
 // ---------------------------------------------------------------
 export function playerSeek(delta) {
   if (!iframeEl) return;
@@ -441,6 +468,9 @@ export function playerSeek(delta) {
   showToast(`${delta > 0 ? '+' : '-'}10s`);
   lastSeekTs = Date.now();
 
+  pendingSeek = { target, at: Date.now() };
+  seekReloadPending = false;
+
   // best-effort command (harmless if the embed ignores it)
   try {
     iframeEl.contentWindow.postMessage(
@@ -449,7 +479,11 @@ export function playerSeek(delta) {
     );
   } catch {}
 
-  seekViaReload(Math.floor(target));
+  // if no verification arrives in time, fall back to the reload mechanism
+  clearTimeout(playerSeek._t);
+  playerSeek._t = setTimeout(() => {
+    if (pendingSeek) seekViaReload(pendingSeek.target);
+  }, 1200);
 }
 
 function seekViaReload(target) {
@@ -457,11 +491,26 @@ function seekViaReload(target) {
   if (now - lastSeekReload < 1200) return;
   lastSeekReload = now;
   lastSeekTs = now;
+  seekReloadPending = true;
   try {
     const url = new URL(iframeEl.src);
     url.searchParams.set('progress', String(target));
     iframeEl.src = url.toString();
   } catch {}
+
+  // if the reload produces no player events, the embed is stuck
+  // (e.g. autoplay blocked after a programmatic reload)
+  clearTimeout(seekViaReload._t);
+  seekViaReload._t = setTimeout(() => {
+    if (seekReloadPending && pendingSeek) {
+      reportEvent('seek-stalled', {
+        message: 'No player events after seek reload (autoplay blocked or embed failed).',
+        target, url: iframeEl && iframeEl.src,
+      });
+      pendingSeek = null;
+      seekReloadPending = false;
+    }
+  }, 8000);
 }
 
 function showToast(msg) {
@@ -511,6 +560,10 @@ export function destroyWatch() {
   loopDrops = 0;
   lastLoopReport = 0;
   lastSeekTs = 0;
+  pendingSeek = null;
+  seekReloadPending = false;
+  clearTimeout(playerSeek._t);
+  clearTimeout(seekViaReload._t);
   clearTimeout(toastTimer);
   toastTimer = null;
 }
