@@ -1,2 +1,13 @@
 node_modules
 .DS_Store
+
+# Android TV app
+tv-app/.gradle/
+tv-app/build/
+tv-app/app/build/
+tv-app/local.properties
+tv-app/keystore/
+*.jks
+*.keystore
+.idea/
+*.iml
