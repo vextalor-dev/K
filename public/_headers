@@ -1,0 +1,22 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org; media-src 'self' blob:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; frame-src https://www.vidking.net https://www.youtube-nocookie.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'
+
+/index.html
+  Cache-Control: no-cache
+
+/js/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/css/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/images/*
+  Cache-Control: public, max-age=86400
+
+/apk/app-release.apk
+  Cache-Control: public, max-age=3600, must-revalidate
