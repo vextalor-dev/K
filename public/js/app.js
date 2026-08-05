@@ -4,6 +4,7 @@
 // ============================================================
 
 import { $, debounce, esc, icon, dateBadge, titleOf, yearOf, mediaTypeOf } from './utils.js';
+import { clientId, pullData, reportError } from './utils.js';
 import * as api from './api.js';
 import { ANIME_IDS, GENRES, LANGUAGES } from './config.js';
 import { renderNav, renderDock, setNavActive } from './nav.js';
@@ -57,6 +58,8 @@ function init() {
   renderFooter(footerRoot());
   maybeOfferApk();
   initTvControls();
+  clientId();
+  pullData();
   window.addEventListener('hashchange', route);
   route();
 }
@@ -172,6 +175,11 @@ async function route() {
     setNavActive('');
     document.title = 'Terms of Use · K';
     renderTermsOfUse(appRoot());
+  } else if (path === 'reports') {
+    currentRoute = 'reports';
+    setNavActive('');
+    document.title = 'Reports · K';
+    renderReports(appRoot());
   } else if (path === 'latest') {
     currentRoute = 'latest';
     setNavActive('');
@@ -484,6 +492,38 @@ async function renderLatest() {
 }
 
 // ---------------------------------------------------------------
+// Error reports (admin view of /api/user/reports)
+// ---------------------------------------------------------------
+async function renderReports() {
+  const root = appRoot();
+  root.innerHTML = '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Error Reports</h1><div id="reports-content"></div></div></div>';
+  const content = $('#reports-content', root);
+  try {
+    const res = await fetch('/api/user/reports?limit=100');
+    if (!res.ok) throw new Error('fetch failed');
+    const list = await res.json();
+    if (!Array.isArray(list) || !list.length) {
+      content.innerHTML = '<div class="search-none">No reports yet.</div>';
+      return;
+    }
+    content.innerHTML = list.map((r) => `
+      <div class="report-item">
+        <div class="report-head">
+          <span class="report-time">${new Date(r.ts).toLocaleString()}</span>
+          <span class="report-level" data-level="${esc(r.level || 'info')}">${esc(r.level || 'info')}</span>
+          <span class="report-name">${esc(r.name)}</span>
+        </div>
+        ${r.message ? `<p class="report-msg">${esc(r.message)}</p>` : ''}
+        <div class="report-meta">${esc(r.url || '')}</div>
+        ${r.detail ? `<pre class="report-detail">${esc(r.detail)}</pre>` : ''}
+      </div>
+    `).join('');
+  } catch {
+    content.innerHTML = '<div class="search-none">Failed to load reports.</div>';
+  }
+}
+
+// ---------------------------------------------------------------
 // Error screen
 // ---------------------------------------------------------------
 function showError(title, msg) {
@@ -514,8 +554,16 @@ function showFatalError(msg) {
     </div>
   `;
 }
-window.addEventListener('error', (e) => { if (e && e.message) showFatalError(e.message); });
-window.addEventListener('unhandledrejection', () => { showFatalError(); });
+window.addEventListener('error', (e) => {
+  if (e && e.message) {
+    showFatalError(e.message);
+    reportError(e);
+  }
+});
+window.addEventListener('unhandledrejection', (e) => {
+  showFatalError();
+  reportError(e && e.reason);
+});
 
 // ---------------------------------------------------------------
 // Boot

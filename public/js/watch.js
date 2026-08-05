@@ -4,6 +4,7 @@
 // ============================================================
 
 import { $, qs, icon, load, save, readProgress, writeProgress, clearProgress, titleOf, yearOf, matchPct } from './utils.js';
+import { reportEvent, reportError } from './utils.js';
 import { SUBTITLES, VIDKING } from './config.js';
 import { details } from './api.js';
 import { openWatch } from './card.js';
@@ -29,6 +30,12 @@ let playerTime = 0;
 let playerDuration = Infinity;
 let lastSeekReload = 0;
 let toastTimer = null;
+
+// playback loop detection (e.g. player stuck bouncing between two times)
+let lastEventTime = -1;
+let loopDrops = 0;
+let lastLoopReport = 0;
+let lastSeekTs = 0;
 
 const VIDKING_ORIGIN = 'https://www.vidking.net';
 
@@ -111,6 +118,9 @@ export function renderWatch(root) {
   playerTime = resumeSec;
   playerDuration = Infinity;
   lastSeekReload = 0;
+  lastSeekTs = Date.now();
+  lastEventTime = -1;
+  loopDrops = 0;
   subEl = $('.watch-caption', root);
   ccBtn = $('.watch-cc', root);
   offsetLabel = $('.watch-sub-offset-val', root);
@@ -194,6 +204,26 @@ export function renderWatch(root) {
       if (typeof evt.duration !== 'number' || !Number.isFinite(evt.duration) || evt.duration <= 0) return;
       playerTime = evt.currentTime;
       playerDuration = evt.duration;
+
+      // loop detection: the player keeps jumping backward without a seek
+      // (matches the "stuck bouncing between 11 and 12 seconds" bug).
+      const evtNow = Date.now();
+      if (evtNow - lastSeekTs > 1500 && lastEventTime >= 0 && evt.currentTime < lastEventTime - 0.5) {
+        loopDrops++;
+        if (loopDrops >= 3 && evtNow - lastLoopReport > 60000) {
+          lastLoopReport = evtNow;
+          reportEvent('player-loop', {
+            message: 'Player repeatedly jumped backward (possible stuck loop).',
+            type, id, season, episode,
+            time: evt.currentTime, last: lastEventTime, duration: evt.duration,
+            url: iframeEl && iframeEl.src,
+          });
+        }
+      } else if (lastEventTime >= 0) {
+        loopDrops = 0;
+      }
+      lastEventTime = evt.currentTime;
+
       if (subOn && subEl && subCues.length) renderCaption(evt.currentTime + subOffset);
       const prog = evt.currentTime / evt.duration;
       const now = Date.now();
@@ -211,7 +241,9 @@ export function renderWatch(root) {
           progress: prog, season, episode,
         });
       }
-    } catch {}
+    } catch (err) {
+      reportError(err);
+    }
   };
   window.addEventListener('message', messageHandler);
 
@@ -246,6 +278,7 @@ export function renderWatch(root) {
         playerTime = 0;
         lastSaveAt = 0;
         lastSavedProg = 0;
+        lastSeekTs = Date.now();
         btn.remove();
         try {
           const url = new URL(iframeEl.src);
@@ -406,6 +439,7 @@ export function playerSeek(delta) {
   const target = Math.max(0, Math.min(base + delta, cap));
 
   showToast(`${delta > 0 ? '+' : '-'}10s`);
+  lastSeekTs = Date.now();
 
   // best-effort command (harmless if the embed ignores it)
   try {
@@ -422,6 +456,7 @@ function seekViaReload(target) {
   const now = Date.now();
   if (now - lastSeekReload < 1200) return;
   lastSeekReload = now;
+  lastSeekTs = now;
   try {
     const url = new URL(iframeEl.src);
     url.searchParams.set('progress', String(target));
@@ -472,6 +507,10 @@ export function destroyWatch() {
   playerTime = 0;
   playerDuration = Infinity;
   lastSeekReload = 0;
+  lastEventTime = -1;
+  loopDrops = 0;
+  lastLoopReport = 0;
+  lastSeekTs = 0;
   clearTimeout(toastTimer);
   toastTimer = null;
 }

@@ -64,8 +64,115 @@ export const hms = (sec) => {
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`;
 };
 
-export const save = (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} };
+export const save = (key, val) => {
+  saveLocal(key, val);
+  queueSync(key);
+};
 export const load = (key, fallback = null) => { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } };
+
+// ============================================================
+// Server-backed sync + error reporting
+// localStorage stays the local cache; every save() is mirrored to
+// /api/user/* (Cloudflare KV) so cleared/corrupted storage can be
+// repaired remotely, and failures get reported back to us.
+// ============================================================
+
+const UID_KEY = 'nkx-uid';
+
+const saveLocal = (key, val) => {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+};
+
+export const clientId = () => {
+  let id = load(UID_KEY, null);
+  if (typeof id !== 'string' || !/^[a-zA-Z0-9_-]{6,64}$/.test(id)) {
+    id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : 'k-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    saveLocal(UID_KEY, id);
+  }
+  return id;
+};
+
+// Debounced mirror of nkx-* keys to the server.
+const pendingSync = new Map();
+let syncTimer = null;
+
+function queueSync(key) {
+  if (!/^nkx-/.test(key)) return;
+  try { pendingSync.set(key, load(key)); } catch { pendingSync.delete(key); }
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(flushSync, 400);
+}
+
+async function flushSync() {
+  const uid = clientId();
+  const entries = Array.from(pendingSync.entries());
+  pendingSync.clear();
+  for (const [key, value] of entries) {
+    if (!/^nkx-/.test(key) || key === UID_KEY) continue;
+    try {
+      await fetch('/api/user/data', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid, key, value }),
+      });
+    } catch { /* offline / server down - local copy survives */ }
+  }
+}
+
+// Pull the server blob and fill in any keys missing locally
+// (localStorage wins when both exist - it is the active cache).
+export async function pullData() {
+  try {
+    const uid = clientId();
+    const res = await fetch(`/api/user/data?uid=${encodeURIComponent(uid)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data || typeof data !== 'object') return;
+    for (const key of Object.keys(data)) {
+      if (!/^nkx-/.test(key) || key === UID_KEY) continue;
+      let has = false;
+      try { has = localStorage.getItem(key) != null; } catch {}
+      if (!has) saveLocal(key, data[key]);
+    }
+  } catch {}
+}
+
+// Batched, throttled error/event reports -> POST /api/user/report
+let reportQueue = [];
+let reportTimer = null;
+let lastReportAt = 0;
+
+export const reportEvent = (name, detail = {}, opts = {}) => {
+  try {
+    const now = Date.now();
+    if (now - lastReportAt < (opts.minInterval || 5000)) return;
+    reportQueue.push({
+      uid: clientId(),
+      name: String(name || 'event').slice(0, 80),
+      level: opts.level || 'info',
+      message: String((detail && detail.message) || '').slice(0, 1000),
+      detail: JSON.stringify(detail).slice(0, 2000),
+      url: (typeof location !== 'undefined' ? location.href : '').slice(0, 300),
+      ts: now,
+    });
+    lastReportAt = now;
+    clearTimeout(reportTimer);
+    reportTimer = setTimeout(() => {
+      const batch = reportQueue.splice(0, 20);
+      if (!batch.length) return;
+      fetch('/api/user/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reports: batch }),
+      }).catch(() => {});
+    }, 800);
+  } catch {}
+};
+
+export const reportError = (err, opts = {}) =>
+  reportEvent('error', { message: String((err && (err.message || err)) || 'unknown error') }, { level: 'error', ...opts });
 
 export const qs = () => Object.fromEntries(new URLSearchParams(location.search));
 
