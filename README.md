@@ -14,6 +14,7 @@
 <br>
 
 [![Stars](https://img.shields.io/github/stars/vextalor-dev/K?style=social)](https://github.com/vextalor-dev/K/stargazers)
+
 **If you find this project useful, consider giving it a star — it helps others discover it and keeps the project going.**
 
 </div>
