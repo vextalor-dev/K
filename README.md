@@ -161,6 +161,5 @@ This project is licensed under the **GNU Affero General Public License v3.0** â€
 
 <div align="center">
 
-**Built for learning. Not for profit.**
 
 </div>
