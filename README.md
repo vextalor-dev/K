@@ -1,6 +1,6 @@
-# Potato (NetflixX/K)
+# K
 
-A pixel-perfect Netflix clone streaming website built with vanilla JavaScript and Express. Uses TMDB for metadata and VidKing embed player for streaming. Includes an Android TV WebView wrapper app.
+A streaming website built with vanilla JavaScript and Express. Uses TMDB for metadata and VidKing embed player for playback. Includes an Android TV WebView wrapper app.
 
 ## Features
 
