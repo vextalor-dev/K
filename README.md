@@ -1,121 +1,162 @@
+<div align="center">
+
 # K
 
-A streaming website built with vanilla JavaScript and Express. Uses TMDB for metadata and VidKing embed player for playback. Includes an Android TV WebView wrapper app.
+**A modern streaming website built with vanilla JavaScript and Express.**
 
-<img width="1600" height="764" alt="image" src="https://github.com/user-attachments/assets/aad5feeb-796f-42ba-8c31-b14971a3adae" />
+![License](https://img.shields.io/badge/license-AGPL--3.0-blue)
+![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
+![Vercel](https://img.shields.io/badge/deployed-Vercel-black)
+![Stars](https://img.shields.io/github/stars/vextalor-dev/K?style=social)
+
+---
+
+<img width="1600" height="764" alt="K - Homepage" src="https://github.com/user-attachments/assets/aad5feeb-796f-42ba-8c31-b14971a3adae" />
+
+</div>
+
+<br>
+
+> A full-featured streaming UI powered by **TMDB** metadata and **VidKing** embed player, with an **Android TV** app — built as a learning project.
+
+---
+
+## Tech Stack
+
+<div align="center">
+
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+
+</div>
+
+---
 
 ## Features
 
-- **TMDB Integration**: Movie/TV metadata, search, genres, trending
-- **VidKing Embed Player**: Streaming via embed URLs
-- **Responsive UI**: Hero carousel, rows, search, detail pages, my list
-- **TV-Friendly**: Keyboard/gamepad navigation, immersive fullscreen
-- **Android TV App**: WebView wrapper with landscape lock, back-button handling
-- **Rate Limited & Cached**: TMDB proxy with in-memory cache and per-IP rate limiting
-- **Deploy Ready**: Vercel config, GitHub Actions for APK builds
+| Feature | Description |
+|---------|-------------|
+| **TMDB Integration** | Movie & TV metadata, search, genres, trending content |
+| **VidKing Player** | Streaming playback via embed URLs |
+| **Responsive UI** | Hero carousel, content rows, search, detail pages, my list |
+| **TV-Optimized** | Keyboard/gamepad navigation, immersive fullscreen |
+| **Android TV App** | WebView wrapper with landscape lock, back-button handling |
+| **Rate Limiting** | Per-IP sliding window (150 req/min) with in-memory cache |
+| **One-Click Deploy** | Vercel-ready with GitHub Actions for APK builds |
+
+---
 
 ## Project Structure
 
 ```
-├── public/              # Static frontend (HTML, CSS, JS)
+K/
+├── public/              # Static frontend
 │   ├── index.html       # App shell
 │   ├── css/             # Modular stylesheets
-│   ├── js/              # Vanilla JS modules (app, nav, search, watch, etc.)
+│   ├── js/              # Vanilla JS modules
 │   ├── images/          # Assets
 │   └── apk/             # Built Android APK
-├── api/                 # TMDB proxy (serverless functions for Vercel)
-├── functions/           # Netlify/Vercel functions mirror
-├── tv-app/              # Android TV WebView app (Gradle)
-│   ├── app/             # Android app source
-│   └── README.md        # TV app build instructions
-├── server.js            # Express server (local dev + TMDB proxy)
-├── config.js            # Runtime config (API keys, ports)
-├── vercel.json          # Vercel deployment config
-└── package.json         # Dependencies (express only)
+├── api/                 # TMDB proxy (Vercel serverless)
+├── tv-app/              # Android TV WebView app
+│   └── app/             # Android source (Gradle)
+├── server.js            # Express server
+├── config.js            # Runtime config
+├── vercel.json          # Vercel deployment
+└── package.json
 ```
+
+---
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- TMDB API key (get from [themoviedb.org](https://www.themoviedb.org/settings/api))
 
-### Local Development
+- **Node.js** 18 or higher
+- **TMDB API key** — get one at [themoviedb.org](https://www.themoviedb.org/settings/api)
+
+### Installation
 
 ```bash
-# Clone and install
-git clone https://github.com/vextalor-dev/Potato.git
-cd Potato
+git clone https://github.com/vextalor-dev/K.git
+cd K
 npm install
-
-# Create config.js with your keys (or set env vars)
-# See config.js for required variables
-
-# Start server
-npm start
-# Runs at http://localhost:3000
 ```
 
-### Environment Variables
-| Variable | Description |
-|----------|-------------|
-| `TMDB_API_KEY` | TMDB v3 API key (required) |
-| `PORT` | Server port (default: 3000) |
+### Configuration
+
+Create a `config.js` file in the root:
+
+```js
+module.exports = {
+  TMDB_API_KEY: 'your_tmdb_api_key_here',
+  PORT: 3000
+};
+```
+
+### Run
+
+```bash
+npm start
+# → http://localhost:3000
+```
+
+---
 
 ## Deployment
 
 ### Vercel (Recommended)
+
 1. Push to GitHub
-2. Import in Vercel
-3. Add `TMDB_API_KEY` in Project Settings → Environment Variables
-4. Deploy — `vercel.json` handles routing and functions
+2. Import repo in [Vercel](https://vercel.com)
+3. Add `TMDB_API_KEY` in **Settings → Environment Variables**
+4. Deploy — `vercel.json` handles everything
 
 ### Other Platforms
-- Works on any Node host (Railway, Render, Fly.io, VPS)
-- Set `TMDB_API_KEY` and run `npm start`
+
+Works on any Node.js host (Railway, Render, Fly.io, VPS). Just set `TMDB_API_KEY` and run `npm start`.
+
+---
 
 ## Android TV App
 
-The `tv-app/` directory contains a minimal WebView wrapper:
-- Loads the hosted site (default: `https://potato-ashy.vercel.app/`)
-- Landscape lock, immersive fullscreen
-- Back-button navigation, HTML5 video fullscreen
-- Auto-built via GitHub Actions on `tv-app/` changes
+The `tv-app/` directory contains a WebView wrapper:
 
-See [tv-app/README.md](tv-app/README.md) for build instructions and signing setup.
+- Loads the hosted site in fullscreen
+- Landscape lock + immersive mode
+- Back-button navigation
+- HTML5 video fullscreen support
+- Auto-built via **GitHub Actions**
 
-## ⚠️ Legal Disclaimer — Read Before Use
+See [`tv-app/README.md`](tv-app/README.md) for build & signing instructions.
 
-**THIS SOFTWARE IS PROVIDED STRICTLY FOR EDUCATIONAL, RESEARCH, AND PERSONAL LEARNING PURPOSES ONLY.**
+---
 
-### No Promotion of Illegal Activity
-- I **do not promote, endorse, facilitate, encourage, or assist** in any form of copyright infringement, piracy, unauthorized streaming, or distribution of protected content.
-- This project is a **proof-of-concept / learning exercise** demonstrating full-stack web development, API integration (TMDB), client-side rendering, and Android TV WebView implementation.
+## Disclaimer
 
-### No Hosted Infringing Content
-- This codebase **does not host, store, index, link to, or distribute** any copyrighted audiovisual works.
-- Streaming playback (if any) occurs via **third-party embed providers** (e.g., VidKing) over which this project has **zero control, affiliation, or responsibility**.
-- The repository contains **only metadata fetch logic (TMDB) and UI code** — no video files, no streaming infrastructure, no CDN, no content.
+> **This project is strictly for educational and personal learning purposes.**
 
-### User Responsibility
-- **You are solely responsible** for how you deploy, use, or extend this code.
-- Any deployment that enables unauthorized access to copyrighted works **violates this project's intent and may violate applicable law** (DMCA, EUCD, local copyright statutes).
-- Do **not** deploy publicly as a "free movie/TV site." Do **not** market or monetize this as a streaming service.
+- I **do not** promote, endorse, or facilitate any form of copyright infringement, piracy, or unauthorized streaming.
+- This is a **proof-of-concept** demonstrating full-stack web development, API integration, and Android TV development.
+- The codebase **does not host, store, or distribute** any copyrighted content. All streaming is handled by **third-party embed providers** (VidKing) over which this project has no control.
+- **You are solely responsible** for how you deploy and use this code.
+- Provided **"AS IS"** under AGPL-3.0. **No warranty** of any kind.
 
-### Third-Party Services
-- TMDB API usage is governed by [TMDB Terms of Use](https://www.themoviedb.org/documentation/terms-of-use) — obtain your own key; do not abuse rate limits.
-- VidKing (or any embed source) is **unaffiliated** with this project. Their legality, availability, and content are **entirely their own responsibility**.
+By using this project, you agree to these terms.
 
-### No Warranty / Liability
-- Provided "AS IS" under AGPL-3.0-only. **No warranty** — express or implied — of merchantability, fitness, or non-infringement.
-- The author **accepts zero liability** for any direct, indirect, incidental, or consequential damages arising from use, misuse, or deployment of this software.
-
-### Enforcement
-- If you discover this code being used in violation of this disclaimer, you are encouraged to report it to the platform host (GitHub, Vercel, etc.) and/or the relevant rights holders.
-- The author reserves the right to revoke access, archive the repository, or take other action if this project is misused.
-
-**By cloning, forking, deploying, or modifying this repository, you acknowledge you have read, understood, and agreed to the above terms.**
+---
 
 ## License
 
-AGPL-3.0-only — see [LICENSE](LICENSE) for details.
+This project is licensed under the **GNU Affero General Public License v3.0** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+**Built for learning. Not for profit.**
+
+</div>
