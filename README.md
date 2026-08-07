@@ -7,11 +7,14 @@
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue)
 ![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
 ![Vercel](https://img.shields.io/badge/deployed-Vercel-black)
-![Stars](https://img.shields.io/github/stars/vextalor-dev/K?style=social)
-
 ---
 
 <img width="1600" height="764" alt="K - Homepage" src="https://github.com/user-attachments/assets/aad5feeb-796f-42ba-8c31-b14971a3adae" />
+
+<br>
+
+[![Stars](https://img.shields.io/github/stars/vextalor-dev/K?style=social)](https://github.com/vextalor-dev/K/stargazers)
+**If you find this project useful, consider giving it a star — it helps others discover it and keeps the project going.**
 
 </div>
 
