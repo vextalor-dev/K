@@ -2,6 +2,8 @@
 
 A streaming website built with vanilla JavaScript and Express. Uses TMDB for metadata and VidKing embed player for playback. Includes an Android TV WebView wrapper app.
 
+<img width="1600" height="764" alt="image" src="https://github.com/user-attachments/assets/aad5feeb-796f-42ba-8c31-b14971a3adae" />
+
 ## Features
 
 - **TMDB Integration**: Movie/TV metadata, search, genres, trending
