@@ -82,13 +82,37 @@ The `tv-app/` directory contains a minimal WebView wrapper:
 
 See [tv-app/README.md](tv-app/README.md) for build instructions and signing setup.
 
-## Disclaimer
+## ⚠️ Legal Disclaimer — Read Before Use
 
-**This project is for educational and practice purposes only.**
+**THIS SOFTWARE IS PROVIDED STRICTLY FOR EDUCATIONAL, RESEARCH, AND PERSONAL LEARNING PURPOSES ONLY.**
 
-I do not promote, encourage, or facilitate any illegal activity including copyright infringement or unauthorized streaming. This is a fun side project to learn full-stack development, API integration, and Android TV development. All streaming is handled via third-party embeds (VidKing); this codebase does not host, index, or distribute any copyrighted content.
+### No Promotion of Illegal Activity
+- I **do not promote, endorse, facilitate, encourage, or assist** in any form of copyright infringement, piracy, unauthorized streaming, or distribution of protected content.
+- This project is a **proof-of-concept / learning exercise** demonstrating full-stack web development, API integration (TMDB), client-side rendering, and Android TV WebView implementation.
 
-Use responsibly and respect intellectual property rights.
+### No Hosted Infringing Content
+- This codebase **does not host, store, index, link to, or distribute** any copyrighted audiovisual works.
+- Streaming playback (if any) occurs via **third-party embed providers** (e.g., VidKing) over which this project has **zero control, affiliation, or responsibility**.
+- The repository contains **only metadata fetch logic (TMDB) and UI code** — no video files, no streaming infrastructure, no CDN, no content.
+
+### User Responsibility
+- **You are solely responsible** for how you deploy, use, or extend this code.
+- Any deployment that enables unauthorized access to copyrighted works **violates this project's intent and may violate applicable law** (DMCA, EUCD, local copyright statutes).
+- Do **not** deploy publicly as a "free movie/TV site." Do **not** market or monetize this as a streaming service.
+
+### Third-Party Services
+- TMDB API usage is governed by [TMDB Terms of Use](https://www.themoviedb.org/documentation/terms-of-use) — obtain your own key; do not abuse rate limits.
+- VidKing (or any embed source) is **unaffiliated** with this project. Their legality, availability, and content are **entirely their own responsibility**.
+
+### No Warranty / Liability
+- Provided "AS IS" under AGPL-3.0-only. **No warranty** — express or implied — of merchantability, fitness, or non-infringement.
+- The author **accepts zero liability** for any direct, indirect, incidental, or consequential damages arising from use, misuse, or deployment of this software.
+
+### Enforcement
+- If you discover this code being used in violation of this disclaimer, you are encouraged to report it to the platform host (GitHub, Vercel, etc.) and/or the relevant rights holders.
+- The author reserves the right to revoke access, archive the repository, or take other action if this project is misused.
+
+**By cloning, forking, deploying, or modifying this repository, you acknowledge you have read, understood, and agreed to the above terms.**
 
 ## License
 
