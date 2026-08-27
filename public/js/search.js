@@ -54,7 +54,9 @@ export function renderSearch(root, query = '') {
 
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && input.value.trim()) {
-      location.hash = `#/search=${encodeURIComponent(input.value.trim())}`;
+      const q = encodeURIComponent(input.value.trim());
+      history.pushState(null, '', `/search?q=${q}`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
       return;
     }
     if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && input.value.trim()) {

@@ -13,8 +13,8 @@ import { buildRow } from './rows.js';
 export async function renderDetail(root, type, id) {
   root.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
 
-  const expectedHash = `#/title:${type}:${id}`;
-  const stale = () => location.hash !== expectedHash || !document.body.contains(root);
+  const expectedPath = `/title/${type}/${id}`;
+  const stale = () => !location.pathname.startsWith(expectedPath) && location.hash !== `#/title:${type}:${id}` || !document.body.contains(root);
 
   try {
     const [det, cred, simData, tKey] = await Promise.all([
@@ -41,7 +41,7 @@ export async function renderDetail(root, type, id) {
     document.title = `${title}${year ? ` (${year})` : ''} · K`;
 
     root.innerHTML = `
-      <div class="page-hero" style="${det.backdrop_path ? `background-image:url(https://image.tmdb.org/t/p/original${det.backdrop_path})` : ''}">
+      <div class="page-hero" style="${det.backdrop_path ? `background-image:url(https://image.tmdb.org/t/p/w1280${det.backdrop_path})` : ''}">
         <div class="page-hero-inner layout-container">
           <button class="detail-back btn btn-glass">${icon('back')} Back</button>
           <div class="detail-poster-area">

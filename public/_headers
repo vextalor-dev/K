@@ -1,10 +1,11 @@
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
+  X-DNS-Prefetch-Control: on
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
-  Strict-Transport-Security: max-age=63072000; includeSubDomains
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org; media-src 'self' blob:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; frame-src https://www.vidking.net https://www.youtube-nocookie.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org https://*.tmdb.org; media-src 'self' blob:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://api.themoviedb.org; frame-src https://www.vidking.net https://*.vidking.net https://www.youtube-nocookie.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'
 
 /index.html
   Cache-Control: no-cache
@@ -18,5 +19,12 @@
 /images/*
   Cache-Control: public, max-age=86400
 
+/subs/*
+  Cache-Control: public, max-age=86400
+
 /apk/app-release.apk
   Cache-Control: public, max-age=3600, must-revalidate
+
+/api/*
+  Cache-Control: no-store
+  X-Robots-Tag: noindex

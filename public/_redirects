@@ -1,1 +1,8 @@
+# Cloudflare Pages / Netlify compatible SPA fallback
+# Keep /api/* as functions, everything else → index.html
+/api/*  /api/:splat  200
+/title/*  /index.html  200
+/watch  /index.html  200
+/search  /index.html  200
+/browse/*  /index.html  200
 /*  /index.html  200

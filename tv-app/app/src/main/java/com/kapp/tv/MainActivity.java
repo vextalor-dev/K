@@ -21,6 +21,7 @@ import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
 
+    // Canonical K URL — keep in sync with public/index.html canonical / vercel.json / sitemap
     private static final String HOME_URL = "https://k-movies.jo3.org/?tv=1";
 
     private WebView webView;

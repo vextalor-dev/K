@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://k-movies.jo3.org/</loc><lastmod>2026-08-27</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://k-movies.jo3.org/movies</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://k-movies.jo3.org/tv</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://k-movies.jo3.org/anime</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://k-movies.jo3.org/search</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://k-movies.jo3.org/new</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://k-movies.jo3.org/languages</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://k-movies.jo3.org/kids</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://k-movies.jo3.org/mylist</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://k-movies.jo3.org/latest</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://k-movies.jo3.org/terms</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://k-movies.jo3.org/terms-of-use</loc><lastmod>2026-08-27</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+</urlset>

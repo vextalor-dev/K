@@ -1,0 +1,13 @@
+{
+  "env": { "browser": true, "es2022": true, "node": true },
+  "extends": ["eslint:recommended"],
+  "parserOptions": { "ecmaVersion": 2022, "sourceType": "module" },
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-console": "off",
+    "prefer-const": "warn",
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    "no-self-assign": "warn"
+  },
+  "ignorePatterns": ["dist/", "public/apk/", "tv-app/", "node_modules/"]
+}

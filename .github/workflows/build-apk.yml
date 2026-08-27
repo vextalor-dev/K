@@ -65,17 +65,16 @@ jobs:
         with:
           name: k-tv-release-apk
           path: tv-app/app/build/outputs/apk/release/*.apk
+          retention-days: 90
 
-      - name: Commit APK to site (public/apk/)
-        run: |
-          mkdir -p public/apk
-          cp tv-app/app/build/outputs/apk/release/app-release.apk public/apk/app-release.apk
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/apk/app-release.apk
-          if git diff --cached --quiet; then
-            echo "APK unchanged - nothing to commit"
-          else
-            git commit -m "build: update TV APK"
-            git push origin HEAD:main
-          fi
+      - name: Create GitHub Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: tv-apk-v${{ github.run_number }}
+          name: K TV APK v${{ github.run_number }}
+          body: "Automated TV APK build from ${{ github.sha }}"
+          files: tv-app/app/build/outputs/apk/release/*.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

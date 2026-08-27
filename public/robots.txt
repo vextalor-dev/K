@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /watch
+
+Sitemap: https://k-movies.jo3.org/sitemap.xml

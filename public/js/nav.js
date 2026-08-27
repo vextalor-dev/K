@@ -9,18 +9,18 @@ import { BROWSE_GENRES, GENRES } from './config.js';
 
 const navRoot = () => $('#nav-root');
 const NAV_LINKS = [
-  { icon: 'home', label: 'Home', hash: '#/' },
-  { icon: 'film', label: 'Movies', hash: '#/movies' },
-  { icon: 'tv', label: 'TV Shows', hash: '#/tv' },
-  { icon: 'sparkles', label: 'Anime', hash: '#/anime' },
+  { icon: 'home', label: 'Home', hash: '/', href: '/' },
+  { icon: 'film', label: 'Movies', hash: '#/movies', href: '/movies' },
+  { icon: 'tv', label: 'TV Shows', hash: '#/tv', href: '/tv' },
+  { icon: 'sparkles', label: 'Anime', hash: '#/anime', href: '/anime' },
 ];
 
 const DOCK_ITEMS = [
-  { icon: 'home', label: 'Home', hash: '#/' },
-  { icon: 'film', label: 'Movies', hash: '#/movies' },
-  { icon: 'tv', label: 'TV', hash: '#/tv' },
-  { icon: 'sparkles', label: 'Anime', hash: '#/anime' },
-  { icon: 'search', label: 'Search', hash: '#/search' },
+  { icon: 'home', label: 'Home', hash: '#/', href: '/' },
+  { icon: 'film', label: 'Movies', hash: '#/movies', href: '/movies' },
+  { icon: 'tv', label: 'TV', hash: '#/tv', href: '/tv' },
+  { icon: 'sparkles', label: 'Anime', hash: '#/anime', href: '/anime' },
+  { icon: 'search', label: 'Search', hash: '#/search', href: '/search' },
 ];
 
 let browseOpen = false;
@@ -36,13 +36,13 @@ export function renderNav() {
   root.innerHTML = `
     <div class="nav-scrim"></div>
     <div class="nav-inner">
-      <a class="logo" href="#/" aria-label="K - Home">
+      <a class="logo" href="/" aria-label="K - Home">
         <img src="images/logo.svg" alt="K" width="40" height="40">
         <span class="logo-text">K</span>
       </a>
       <nav class="nav-links">
         ${NAV_LINKS.map(l => `
-          <a class="nav-link" href="${l.hash}" data-hash="${l.hash}">
+          <a class="nav-link" href="${l.href}" data-hash="${l.hash}" data-href="${l.href}">
             ${icon(l.icon)}
             <span class="font-medium">${l.label}</span>
           </a>
@@ -76,13 +76,14 @@ export function renderNav() {
   bindBrowse();
   bindMobile();
   window.addEventListener('hashchange', closeNavOverlays);
+  window.addEventListener('popstate', closeNavOverlays);
 }
 
 function buildBrowseDropdown() {
   const dd = $('.browse-dropdown');
   if (!dd) return;
   dd.innerHTML = BROWSE_GENRES.map(g =>
-    `<a class="browse-item" href="#/browse=${g.id}&title=${encodeURIComponent(g.label)}">
+    `<a class="browse-item" href="/browse/${g.id}?title=${encodeURIComponent(g.label)}" data-hash="#/browse=${g.id}&title=${encodeURIComponent(g.label)}">
       <span>${g.label}</span>
     </a>`
   ).join('');
@@ -132,13 +133,15 @@ function bindScroll() {
 
   // After a route change the page scrolls to top; if the window was already
   // at scrollY 0 no scroll event fires, so the header could stay hidden from
-  // the previous page's scroll state. Reset on every hashchange.
-  window.addEventListener('hashchange', () => {
+  // the previous page's scroll state. Reset on every navigation.
+  const resetHidden = () => {
     lastY = 0;
     navHidden = false;
     const root = navRoot();
     if (root) root.classList.remove('nav-hidden');
-  });
+  };
+  window.addEventListener('hashchange', resetHidden);
+  window.addEventListener('popstate', resetHidden);
 }
 
 function bindSearch() {
@@ -165,7 +168,9 @@ function bindSearch() {
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { closeSearch(); }
     if (e.key === 'Enter' && input.value.trim()) {
-      location.hash = `#/search=${encodeURIComponent(input.value.trim())}`;
+      const q = encodeURIComponent(input.value.trim());
+      history.pushState(null, '', `/search?q=${q}`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
       closeSearch();
     }
   });
@@ -241,7 +246,8 @@ const doNavSearch = debounce(async (q) => {
     searchDrop.classList.add('open');
     $$('.drop-item', searchDrop).forEach(el => {
       el.addEventListener('click', () => {
-        location.hash = `#/title:${el.dataset.type}:${el.dataset.id}`;
+        history.pushState(null, '', `/title/${el.dataset.type}/${el.dataset.id}`);
+        window.dispatchEvent(new PopStateEvent('popstate'));
         closeSearch();
       });
     });
@@ -287,16 +293,16 @@ function bindMobile() {
     menuEl.className = 'mobile-menu open';
     menuEl.innerHTML = `
       <div class="mobile-menu-panel">
-        <a class="logo" href="#/">
+        <a class="logo" href="/">
           <img src="images/logo.svg" alt="K" width="40" height="40">
           <span class="logo-text">K</span>
         </a>
         ${NAV_LINKS.map(l => `
-          <a class="mobile-menu-link" href="${l.hash}">${icon(l.icon)} ${l.label}</a>
+          <a class="mobile-menu-link" href="${l.href}">${icon(l.icon)} ${l.label}</a>
         `).join('')}
-        <a class="mobile-menu-link" href="#/anime">${icon('sparkles')} Anime</a>
-        <a class="mobile-menu-link" href="#/search">${icon('search')} Search</a>
-        <a class="mobile-menu-link" href="#/mylist">${icon('heart')} My List</a>
+        <a class="mobile-menu-link" href="/anime">${icon('sparkles')} Anime</a>
+        <a class="mobile-menu-link" href="/search">${icon('search')} Search</a>
+        <a class="mobile-menu-link" href="/mylist">${icon('heart')} My List</a>
       </div>
     `;
     document.body.appendChild(menuEl);

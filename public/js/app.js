@@ -21,6 +21,7 @@ import { GENRE_MOODS } from './config.js';
 import { maybeOfferApk } from './apk.js';
 import { initTvControls, resetFocus } from './tv-controls.js';
 import { renderTerms, renderTermsOfUse } from './legal.js';
+import { normalizePath, navigate, watchNavigate, setCanonical } from './router.js';
 
 const appRoot = () => $('#app-root');
 const watchRoot = () => $('#watch-root');
@@ -60,7 +61,22 @@ function init() {
   initTvControls();
   clientId();
   pullData();
-  window.addEventListener('hashchange', route);
+  watchNavigate(route);
+  // intercept internal clicks for History API (progressive enhancement)
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return;
+    // allow browser to handle /watch? etc normally but still SPA
+    if (href.startsWith('/watch') || href.startsWith('/title') || href.startsWith('/browse') || ['/','/movies','/tv','/anime','/search','/new','/languages','/kids','/mylist','/latest','/terms','/terms-of-use','/reports'].some((p) => href === p || href.startsWith(p + '?') || href.startsWith(p + '/'))) {
+      // only intercept same-origin
+      try { const url = new URL(href, location.origin); if (url.origin !== location.origin) return; } catch { return; }
+      e.preventDefault();
+      history.pushState(null, '', href);
+      route();
+    }
+  });
   route();
 }
 
@@ -68,8 +84,15 @@ function init() {
 // Router
 // ---------------------------------------------------------------
 async function route() {
-  const hash = location.hash || '#/';
-  const path = hash.replace(/^#\/?/, '');
+  const path = normalizePath();
+  // keep legacy hash sync for old bookmarks: if user lands on #/movies, migrate to /movies
+  if (location.hash.startsWith('#/')) {
+    const legacy = location.hash.replace(/^#\/?/, '');
+    if (legacy && !location.pathname.includes(legacy.split(':')[0])) {
+      // one-time migration without adding history entry
+      try { history.replaceState(null, '', `/${legacy.split(':')[0].split('=')[0]}`); } catch {}
+    }
+  }
 
   // Watch page (query-routed by Express)
   if (location.pathname === '/watch') {
@@ -194,6 +217,9 @@ async function route() {
 
   // scroll to top on route change
   window.scrollTo(0, 0);
+
+  // update canonical for SEO (history mode)
+  try { setCanonical(location.pathname + location.search); } catch {}
 
   // TV remote: focus the primary element for this route
   resetFocus();

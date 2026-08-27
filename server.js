@@ -1,140 +1,75 @@
 const express = require('express');
 const path = require('path');
-const { TMDB_API_KEY } = require('./config');
+let compression;
+try { compression = require('compression'); } catch { compression = () => (req, res, next) => next(); }
+const { TMDB_API_KEY, TMDB_BEARER } = require('./config');
+const { clientIp, isRateLimited, normalizeApiPath, proxyTMDB } = require('./api/_lib/tmdb');
 
 const app = express();
-const TMDB_BASE = 'https://api.themoviedb.org/3';
-const CACHE_TTL = 60 * 60 * 1000;
-const MAX_CACHE_ENTRIES = 500;
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const CACHE_CTRL = 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400';
-
-const cache = new Map();
-
-// Best-effort per-IP sliding-window rate limit (mirrors api/tmdb.js).
-const RATE_WINDOW_MS = 60 * 1000;
-const RATE_LIMIT = 150;
-const MAX_RATE_ENTRIES = 5000;
-const hits = new Map();
-
-function clientIp(req) {
-  const fwd = req.headers['x-forwarded-for'];
-  if (fwd) return String(fwd).split(',')[0].trim();
-  return (req.socket && req.socket.remoteAddress) || 'unknown';
-}
-
-function isRateLimited(ip) {
-  const now = Date.now();
-  const arr = (hits.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (arr.length >= RATE_LIMIT) {
-    hits.set(ip, arr);
-    return true;
-  }
-  arr.push(now);
-  hits.set(ip, arr);
-  if (hits.size > MAX_RATE_ENTRIES) {
-    for (const key of hits.keys()) {
-      hits.delete(key);
-      if (hits.size <= MAX_RATE_ENTRIES / 2) break;
-    }
-  }
-  return false;
-}
-
-function trimCache() {
-  if (cache.size <= MAX_CACHE_ENTRIES) return;
-  const oldest = Array.from(cache.entries()).sort((a, b) => a[1].expires - b[1].expires);
-  for (const [k] of oldest.slice(0, MAX_CACHE_ENTRIES / 2)) cache.delete(k);
-}
-
-function normalizeApiPath(p) {
-  const clean = String(p || '').replace(/^\/+/, '').replace(/\/+$/, '');
-  if (!clean || clean.length > 200) return null;
-  if (clean.split('/').some((seg) => seg === '..')) return null;
-  return clean;
-}
 
 const publicDir = path.join(__dirname, 'public');
-app.use(express.static(publicDir));
 
-// TMDB proxy
+// Security + parsing middleware
+app.use(compression());
+app.use(express.json({ limit: '64kb' }));
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+  // CSP is set via vercel.json/_headers for static, but also set here for dynamic
+  res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains');
+  next();
+});
+
+app.use(express.static(publicDir, {
+  maxAge: '1h',
+  etag: true,
+  lastModified: true,
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+  }
+}));
+
+// Health check (no auth, no rate limit)
+app.get('/api/health', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ ok: true, uptime: process.uptime(), version: require('./package.json').version, tmdb: !!(TMDB_API_KEY || TMDB_BEARER) });
+});
+
+// TMDB proxy — delegates to shared logic in api/_lib/tmdb.js
 app.get(['/api/tmdb', '/api/tmdb/*'], async (req, res) => {
-  if (!TMDB_API_KEY) {
+  if (!TMDB_API_KEY && !TMDB_BEARER) {
     return res.status(500).json({
-      error: 'TMDB_API_KEY is not set. Add it to the project environment variables (Vercel -> Settings -> Environment Variables -> TMDB_API_KEY).',
+      error: 'TMDB_API_KEY or TMDB_BEARER is not set. Add it to the project environment variables (Vercel -> Settings -> Environment Variables -> TMDB_API_KEY).',
     });
   }
-
   const apiPath = normalizeApiPath(req.params[0]);
   if (apiPath == null) return res.status(400).json({ error: 'Bad request: missing TMDB path.' });
-
   if (isRateLimited(clientIp(req))) {
     res.set('Retry-After', '60');
     return res.status(429).json({ error: 'Too many requests. Try again shortly.' });
   }
-
-  const qs = new URLSearchParams(req.query);
-  qs.set('api_key', TMDB_API_KEY);
-  if (!qs.get('language')) qs.set('language', 'en-US');
-  const url = `${TMDB_BASE}/${apiPath}?${qs.toString()}`;
-
-  const hit = cache.get(url);
-  if (hit && hit.expires > Date.now()) {
-    res.set('Cache-Control', CACHE_CTRL);
-    return res.json(hit.body);
+  const queryString = new URLSearchParams(req.query).toString();
+  const result = await proxyTMDB({ apiPath, queryString, tmdbApiKey: TMDB_API_KEY, tmdbBearer: TMDB_BEARER });
+  if (result.error) {
+    const detail = result.lastError && typeof result.lastError === 'object' && Number.isFinite(result.lastError.status) ? result.lastError.status : undefined;
+    return res.status(502).json(detail != null ? { error: 'TMDB upstream request failed', detail } : { error: 'TMDB upstream request failed' });
   }
-
-  let lastError = null;
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const upstream = await fetch(url, { headers: { accept: 'application/json' } });
-      if (!upstream.ok) {
-        lastError = { status: upstream.status };
-        if ((upstream.status === 429 || upstream.status >= 500) && attempt === 0) {
-          await sleep(600);
-          continue;
-        }
-        break;
-      }
-      const body = await upstream.json();
-      cache.set(url, { expires: Date.now() + CACHE_TTL, body });
-      trimCache();
-      res.set('Cache-Control', CACHE_CTRL);
-      return res.json(body);
-    } catch (err) {
-      lastError = err;
-      if (attempt === 0) {
-        await sleep(600);
-        continue;
-      }
-      break;
-    }
-  }
-
-  const stale = cache.get(url);
-  if (stale) {
-    res.set('Cache-Control', CACHE_CTRL);
-    return res.json(stale.body);
-  }
-
-  const detail =
-    lastError && typeof lastError === 'object' && Number.isFinite(lastError.status)
-      ? lastError.status
-      : undefined;
-  res.status(502).json(
-    detail != null
-      ? { error: 'TMDB upstream request failed', detail }
-      : { error: 'TMDB upstream request failed' }
-  );
+  res.set('Cache-Control', result.cacheCtrl);
+  return res.json(result.body);
 });
 
-// App shell
-app.get(['/', '/watch'], (req, res) => res.sendFile(path.join(publicDir, 'index.html')));
+// App shell — serve index.html for all known SPA routes (History API)
+const SPA_ROUTES = ['/', '/watch', '/movies', '/tv', '/anime', '/search', '/new', '/languages', '/kids', '/mylist', '/latest', '/terms', '/terms-of-use', '/reports'];
+app.get([...SPA_ROUTES, '/title/:type/:id', '/browse/:id'], (req, res) => res.sendFile(path.join(publicDir, 'index.html')));
 
-// SPA fallback
+// SPA fallback — any other non-API path
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found' });
+  // allow static files to 404 naturally
+  if (req.path.includes('.') && !req.path.endsWith('.html')) return res.status(404).send('Not found');
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 

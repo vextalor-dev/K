@@ -28,7 +28,9 @@ export const detailFor = (type, id) => {
 };
 
 export const openDetail = (type, id) => {
-  location.hash = `#/title:${type}:${id}`;
+  const url = `/title/${type}/${id}`;
+  history.pushState(null, '', url);
+  window.dispatchEvent(new PopStateEvent('popstate'));
 };
 
 export const openWatch = (type, id, season, episode) => {

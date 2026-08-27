@@ -1,7 +1,9 @@
 node_modules
+dist
 .DS_Store
 .env
 .env.*
+coverage
 
 # Vercel
 .vercel/
@@ -16,3 +18,7 @@ tv-app/keystore/
 *.keystore
 .idea/
 *.iml
+
+# APK artifacts — publish via GitHub Releases, not git
+public/apk/
+*.apk

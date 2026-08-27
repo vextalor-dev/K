@@ -5,13 +5,16 @@
 
 export const APP_NAME = 'K';
 
-// K TV Android APK - committed to /apk/ by .github/workflows/build-apk.yml
-// Same-origin so the TV (opening this site) can download it without auth.
+// K TV Android APK — now delivered via GitHub Releases (see .github/workflows/build-apk.yml)
+// Falls back to /apk/app-release.apk for local dev where the artifact is placed manually.
+// Version must stay in sync with tv-app/app/build.gradle versionName.
 export const APK = {
+  // Production: replace with latest release URL, e.g. https://github.com/vextalor-dev/K/releases/latest/download/app-release.apk
   url: '/apk/app-release.apk',
   fileName: 'app-release.apk',
-  version: '1.0.0',
+  version: '1.0.1',
   savePath: '/storage/emulated/0/Download/',
+  releaseUrl: 'https://github.com/vextalor-dev/K/releases/latest/download/app-release.apk',
 };
 
 export const VIDKING = {
