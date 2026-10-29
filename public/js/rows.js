@@ -5,6 +5,7 @@
 
 import { $, $$, esc, icon } from './utils.js';
 import { makeCard } from './card.js';
+import { setLocalApiKey } from './api.js';
 
 // ---------------------------------------------------------------
 // Build a single horizontal row with title + scroll track + arrows
@@ -79,13 +80,33 @@ export async function buildApiRow(container, { title, promise, load, type, opts 
     ).join('');
   };
 
-  const showError = () => {
+  const showError = (err) => {
+    const isKeyMissing =
+      err?.code === 'TMDB_API_KEY_REQUIRED' ||
+      String(err?.message || '').includes('TMDB_API_KEY') ||
+      String(err?.message || '').includes('API Key');
+
     track.innerHTML = `
       <div class="row-error" role="alert">
-        <p>Failed to load. Try again later.</p>
-        <button type="button" class="btn-retry">Retry</button>
+        <p>${isKeyMissing ? 'TMDB API key required to load movies.' : 'Failed to load. Try again later.'}</p>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+          ${isKeyMissing ? '<button type="button" class="btn-set-key" style="background:#dc2626;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600">Enter API Key</button>' : ''}
+          <button type="button" class="btn-retry">Retry</button>
+        </div>
       </div>
     `;
+
+    const setKeyBtn = $('.btn-set-key', track);
+    if (setKeyBtn) {
+      setKeyBtn.addEventListener('click', () => {
+        const key = window.prompt('Enter your TMDB API Key (v3 API key or v4 Read Access Token):');
+        if (key && key.trim()) {
+          setLocalApiKey(key.trim());
+          window.location.reload();
+        }
+      });
+    }
+
     $('.btn-retry', track).addEventListener('click', () => {
       if (typeof load === 'function') {
         // `load` can mint a fresh promise so we can re-run the fetch in place.
@@ -115,8 +136,8 @@ export async function buildApiRow(container, { title, promise, load, type, opts 
           track.appendChild(makeCard(item, { ...opts, type: type || undefined, rank: realRank }));
         });
       }
-    } catch {
-      showError();
+    } catch (err) {
+      showError(err);
     }
     updateArrowState();
   };

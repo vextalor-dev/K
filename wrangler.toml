@@ -1,0 +1,6 @@
+name = "k"
+compatibility_date = "2026-10-23"
+pages_build_output_dir = "public"
+
+[vars]
+TMDB_API_KEY = "7f1744eb03153962f13f178d89036a40"

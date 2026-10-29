@@ -8,6 +8,10 @@ coverage
 # Vercel
 .vercel/
 
+# Cloudflare Wrangler
+.wrangler/
+dist-worker/
+
 # Android TV app
 tv-app/.gradle/
 tv-app/build/

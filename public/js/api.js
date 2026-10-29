@@ -1,11 +1,37 @@
 // ============================================================
 // K - api.js
-// Thin client for the server-side TMDB proxy with a small
-// in-memory cache to keep calls (and rate limits) low.
+// Thin client for TMDB proxy with fallback to direct TMDB API
+// and in-memory cache to keep requests low.
 // ============================================================
 
 const cache = new Map(); // key -> { exp, data }
 const TTL = 10 * 60 * 1000;
+const TMDB_DIRECT_BASE = 'https://api.themoviedb.org/3';
+const DEFAULT_TMDB_KEY = '7f1744eb03153962f13f178d89036a40';
+
+export function getLocalApiKey() {
+  try {
+    return (
+      (typeof localStorage !== 'undefined' && localStorage.getItem('tmdb_api_key')) ||
+      (typeof window !== 'undefined' && window.TMDB_API_KEY) ||
+      DEFAULT_TMDB_KEY
+    );
+  } catch {
+    return DEFAULT_TMDB_KEY;
+  }
+}
+
+export function setLocalApiKey(key) {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      if (key && key.trim()) {
+        localStorage.setItem('tmdb_api_key', key.trim());
+      } else {
+        localStorage.removeItem('tmdb_api_key');
+      }
+    }
+  } catch {}
+}
 
 export async function fetchTMDB(path, params = {}) {
   const qs = new URLSearchParams({ language: 'en-US', ...params });
@@ -14,16 +40,67 @@ export async function fetchTMDB(path, params = {}) {
   const hit = cache.get(key);
   if (hit && hit.exp > Date.now()) return hit.data;
 
+  const localKey = getLocalApiKey();
   let data;
-  let res;
+  let useDirect = false;
+  let errorReason = '';
+
+  // 1. Try server-side proxy
   try {
-    res = await fetch(`/api/tmdb/${path}?${qs.toString()}`);
-  } catch {
-    // one client-side retry for transient network blips
-    res = await fetch(`/api/tmdb/${path}?${qs.toString()}`);
+    let res = await fetch(`/api/tmdb/${path}?${qs.toString()}`);
+    const ctype = res.headers.get('content-type') || '';
+
+    // If server returned HTML (e.g. SPA fallback index.html), proxy is not responding
+    if (ctype.includes('text/html')) {
+      useDirect = true;
+      errorReason = 'Proxy returned HTML instead of JSON';
+    } else if (res.ok) {
+      data = await res.json();
+    } else {
+      let errBody;
+      try { errBody = await res.json(); } catch {}
+      if (res.status === 500 && (errBody?.error?.includes('TMDB_API_KEY') || errBody?.message?.includes('TMDB_API_KEY'))) {
+        errorReason = 'TMDB_API_KEY is not configured on server';
+      } else {
+        errorReason = `Proxy returned ${res.status}`;
+      }
+      useDirect = true;
+    }
+  } catch (err) {
+    useDirect = true;
+    errorReason = err.message || 'Network error';
   }
-  if (!res.ok) throw new Error(`TMDB request failed (${res.status})`);
-  data = await res.json();
+
+  // 2. Fall back to direct TMDB API if proxy failed and local key is available
+  if (useDirect) {
+    if (localKey) {
+      const directQs = new URLSearchParams({ language: 'en-US', ...params });
+      const headers = { accept: 'application/json' };
+      let directUrl;
+      if (localKey.startsWith('eyJ')) {
+        // v4 Bearer token
+        headers.Authorization = `Bearer ${localKey}`;
+        directUrl = `${TMDB_DIRECT_BASE}/${path}?${directQs.toString()}`;
+      } else {
+        directQs.set('api_key', localKey);
+        directUrl = `${TMDB_DIRECT_BASE}/${path}?${directQs.toString()}`;
+      }
+
+      const directRes = await fetch(directUrl, { headers });
+      if (!directRes.ok) {
+        throw new Error(`TMDB direct request failed (${directRes.status})`);
+      }
+      data = await directRes.json();
+    } else {
+      const err = new Error(
+        errorReason.includes('TMDB_API_KEY')
+          ? 'TMDB_API_KEY_REQUIRED'
+          : `TMDB request failed (${errorReason})`
+      );
+      err.code = errorReason.includes('TMDB_API_KEY') ? 'TMDB_API_KEY_REQUIRED' : 'TMDB_ERROR';
+      throw err;
+    }
+  }
 
   cache.set(key, { exp: Date.now() + TTL, data });
   return data;

@@ -25,7 +25,7 @@ export async function onRequest(context) {
   if (context.request.method !== 'GET') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { 'Content-Type': 'application/json' } });
   }
-  const TMDB_API_KEY = context.env.TMDB_API_KEY;
+  const TMDB_API_KEY = context.env.TMDB_API_KEY || '7f1744eb03153962f13f178d89036a40';
   const TMDB_BEARER = context.env.TMDB_BEARER_TOKEN || context.env.TMDB_API_BEARER;
   if (!TMDB_API_KEY && !TMDB_BEARER) {
     return new Response(JSON.stringify({ error: 'TMDB_API_KEY or TMDB_BEARER_TOKEN is not set.' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
@@ -45,7 +45,6 @@ export async function onRequest(context) {
   const qs = new URLSearchParams(url.search);
   const useBearer = !!TMDB_BEARER;
   if (useBearer) {
-    // do not leak api_key if bearer present — strip any client-supplied one
     qs.delete('api_key');
   } else {
     qs.set('api_key', TMDB_API_KEY);
