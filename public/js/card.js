@@ -49,9 +49,12 @@ export const openDetail = (type, id) => {
 };
 
 export const openWatch = (type, id, season, episode) => {
-  if (type === 'tv')
-    location.href = `/watch?type=tv&id=${id}&season=${season || 1}&episode=${episode || 1}`;
-  else location.href = `/watch?type=movie&id=${id}`;
+  const url =
+    type === 'tv'
+      ? `/watch?type=tv&id=${id}&season=${season || 1}&episode=${episode || 1}`
+      : `/watch?type=movie&id=${id}`;
+  history.pushState(null, '', url);
+  window.dispatchEvent(new PopStateEvent('popstate'));
 };
 
 // ---------------------------------------------------------------

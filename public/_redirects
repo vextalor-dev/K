@@ -1,6 +1,2 @@
 # Cloudflare Pages / Netlify compatible SPA fallback
-/title/*  /index.html  200
-/watch  /index.html  200
-/search  /index.html  200
-/browse/*  /index.html  200
 /*  /index.html  200

@@ -131,8 +131,16 @@ async function route() {
     }
   }
 
-  // Watch page (query-routed by Express)
-  if (location.pathname === '/watch') {
+  // Watch page (query-routed by Express, SPA pushState, or redirect fallback query)
+  const searchParams = new URLSearchParams(location.search);
+  const isWatch =
+    location.pathname === '/watch' ||
+    location.pathname === '/watch/' ||
+    path === 'watch' ||
+    (searchParams.has('id') &&
+      (searchParams.get('type') === 'movie' || searchParams.get('type') === 'tv'));
+
+  if (isWatch) {
     // A hashchange (e.g. hand-edited URL) while already on /watch re-runs this
     // branch. Tear down the previous player first so its document/window
     // listeners (message, mousemove, touchstart, keydown) aren't re-bound.
