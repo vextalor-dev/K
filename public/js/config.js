@@ -17,23 +17,48 @@ export const APK = {
   releaseUrl: 'https://github.com/vextalor-dev/K/releases/latest/download/app-release.apk',
 };
 
-export const VIDKING = {
-  movie(id, opts = {}) {
-    const p = new URLSearchParams({ color: 'dc2626', autoPlay: 'true' });
-    if (opts.progress) p.set('progress', String(Math.floor(opts.progress)));
-    return `https://www.vidking.net/embed/movie/${id}?${p.toString()}`;
+export const STREAM_PROVIDERS = [
+  {
+    id: 'vidsrc-to',
+    name: 'VidSrc (Default)',
+    movie: (id) => `https://vidsrc.to/embed/movie/${id}`,
+    tv: (id, season, episode) => `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`,
   },
-  tv(id, season, episode, opts = {}) {
-    const p = new URLSearchParams({
-      color: 'dc2626',
-      autoPlay: 'true',
-      nextEpisode: 'true',
-      episodeSelector: 'true',
-    });
-    if (opts.progress) p.set('progress', String(Math.floor(opts.progress)));
-    return `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?${p.toString()}`;
+  {
+    id: 'vidsrc-me',
+    name: 'VidSrc Mirror',
+    movie: (id) => `https://vidsrc.me/embed/movie?tmdb=${id}`,
+    tv: (id, season, episode) =>
+      `https://vidsrc.me/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`,
   },
-};
+  {
+    id: '2embed',
+    name: '2Embed',
+    movie: (id) => `https://www.2embed.cc/embed/${id}`,
+    tv: (id, season, episode) => `https://www.2embed.cc/embedtv/${id}&s=${season}&e=${episode}`,
+  },
+  {
+    id: 'vidking',
+    name: 'VidKing',
+    movie: (id, opts = {}) => {
+      const p = new URLSearchParams({ color: 'dc2626', autoPlay: 'true' });
+      if (opts?.progress) p.set('progress', String(Math.floor(opts.progress)));
+      return `https://www.vidking.net/embed/movie/${id}?${p.toString()}`;
+    },
+    tv: (id, season, episode, opts = {}) => {
+      const p = new URLSearchParams({
+        color: 'dc2626',
+        autoPlay: 'true',
+        nextEpisode: 'true',
+        episodeSelector: 'true',
+      });
+      if (opts?.progress) p.set('progress', String(Math.floor(opts.progress)));
+      return `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?${p.toString()}`;
+    },
+  },
+];
+
+export const VIDKING = STREAM_PROVIDERS[0];
 
 export const imgUrl = (path, size = 'w500') =>
   path ? `https://image.tmdb.org/t/p/${size}${path}` : null;

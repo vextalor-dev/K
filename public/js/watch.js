@@ -6,6 +6,7 @@
 import {
   $,
   qs,
+  esc,
   icon,
   load,
   save,
@@ -17,7 +18,7 @@ import {
   matchPct,
 } from './utils.js';
 import { reportEvent, reportError } from './utils.js';
-import { SUBTITLES, VIDKING } from './config.js';
+import { SUBTITLES, STREAM_PROVIDERS } from './config.js';
 import { details } from './api.js';
 import { openWatch } from './card.js';
 
@@ -79,15 +80,31 @@ export function renderWatch(root) {
   const resumeSec =
     progress && Number.isFinite(progress.seconds) ? Math.floor(progress.seconds) : 0;
 
-  const embedUrl =
+  const savedServerId =
+    (typeof localStorage !== 'undefined' && localStorage.getItem('preferred_server')) ||
+    STREAM_PROVIDERS[0].id;
+  let currentProvider = STREAM_PROVIDERS.find((p) => p.id === savedServerId) || STREAM_PROVIDERS[0];
+
+  const getEmbedUrl = (prov) =>
     type === 'tv'
-      ? VIDKING.tv(id, season, episode, { progress: resumeSec })
-      : VIDKING.movie(id, { progress: resumeSec });
+      ? prov.tv(id, season, episode, { progress: resumeSec })
+      : prov.movie(id, { progress: resumeSec });
+
+  const embedUrl = getEmbedUrl(currentProvider);
 
   root.innerHTML = `
     <div class="watch-player">
       <div class="watch-controls">
         <button class="btn btn-glass watch-back" aria-label="Go back">${icon('back')} Back</button>
+        <div class="watch-server-select">
+          <label for="server-dropdown" style="font-size:12px;color:var(--text-dim,#a1a1aa);font-weight:600">Server:</label>
+          <select id="server-dropdown" class="server-dropdown" aria-label="Streaming server" style="background:transparent;color:#fff;border:none;outline:none;cursor:pointer;font-size:12px;font-weight:600">
+            ${STREAM_PROVIDERS.map(
+              (p) =>
+                `<option value="${p.id}" ${p.id === currentProvider.id ? 'selected' : ''} style="background:#18181b;color:#fff">${esc(p.name)}</option>`
+            ).join('')}
+          </select>
+        </div>
       </div>
       <iframe
         class="watch-iframe"
@@ -195,10 +212,26 @@ export function renderWatch(root) {
     window.history.back();
   });
 
-  // show back button on mouse move
+  // server dropdown
+  const serverDropdown = $('#server-dropdown', root);
+  if (serverDropdown) {
+    serverDropdown.addEventListener('change', (e) => {
+      const nextProvider =
+        STREAM_PROVIDERS.find((p) => p.id === e.target.value) || STREAM_PROVIDERS[0];
+      currentProvider = nextProvider;
+      try {
+        localStorage.setItem('preferred_server', nextProvider.id);
+      } catch {}
+      iframe.src = getEmbedUrl(nextProvider);
+    });
+  }
+
+  // show back button and server selector on mouse move
   let detInfo = null;
   const showControls = () => {
     backBtn.classList.add('show');
+    const serverSelect = $('.watch-server-select', root);
+    if (serverSelect) serverSelect.classList.add('show');
     const inner = $('.watch-subs-inner', root);
     if (inner) inner.classList.add('show');
     const transport = $('.watch-transport', root);
@@ -206,6 +239,7 @@ export function renderWatch(root) {
     clearTimeout(controlsTimer);
     controlsTimer = setTimeout(() => {
       backBtn.classList.remove('show');
+      if (serverSelect) serverSelect.classList.remove('show');
       if (inner) inner.classList.remove('show');
       if (transport) transport.classList.remove('show');
     }, 3000);
@@ -215,10 +249,18 @@ export function renderWatch(root) {
   document.addEventListener('mousemove', mouseMoveHandler);
   document.addEventListener('touchstart', touchStartHandler);
 
-  // retry
+  // retry / switch server
   retryBtn.addEventListener('click', () => {
+    const currIdx = STREAM_PROVIDERS.findIndex((p) => p.id === currentProvider.id);
+    const nextIdx = (currIdx + 1) % STREAM_PROVIDERS.length;
+    const nextProvider = STREAM_PROVIDERS[nextIdx];
+    currentProvider = nextProvider;
+    if (serverDropdown) serverDropdown.value = nextProvider.id;
+    try {
+      localStorage.setItem('preferred_server', nextProvider.id);
+    } catch {}
     unavailable.style.display = 'none';
-    iframe.src = iframe.src; // reload
+    iframe.src = getEmbedUrl(nextProvider);
   });
 
   // listen for VidKing player progress messages (only from trusted origins)

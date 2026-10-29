@@ -56,6 +56,44 @@ body.watch-mode .dock-outer {
   background: rgba(220, 38, 38, 0.2);
 }
 
+/* server selector */
+.watch-server-select {
+  position: fixed;
+  top: 20px;
+  left: 110px;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: var(--glass-bg, rgba(18, 20, 26, 0.7));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.watch-mode.controls-visible .watch-server-select,
+.watch-server-select.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.watch-server-select:hover {
+  background: rgba(220, 38, 38, 0.15);
+}
+
+@media (max-width: 600px) {
+  .watch-server-select {
+    left: 95px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+}
+
 /* subtitles */
 .watch-subs {
   position: fixed;
