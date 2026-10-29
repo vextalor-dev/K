@@ -23,11 +23,17 @@ function clientIp(req) {
 function isRateLimited(ip) {
   const now = Date.now();
   const arr = (hits.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (arr.length >= RATE_LIMIT) { hits.set(ip, arr); return true; }
+  if (arr.length >= RATE_LIMIT) {
+    hits.set(ip, arr);
+    return true;
+  }
   arr.push(now);
   hits.set(ip, arr);
   if (hits.size > MAX_RATE_ENTRIES) {
-    for (const k of hits.keys()) { hits.delete(k); if (hits.size <= MAX_RATE_ENTRIES / 2) break; }
+    for (const k of hits.keys()) {
+      hits.delete(k);
+      if (hits.size <= MAX_RATE_ENTRIES / 2) break;
+    }
   }
   return false;
 }
@@ -39,7 +45,9 @@ function trimCache() {
 }
 
 function normalizeApiPath(raw) {
-  const clean = String(raw || '').replace(/^\/+/, '').replace(/\/+$/, '');
+  const clean = String(raw || '')
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
   if (!clean || clean.length > 200) return null;
   if (clean.split('/').some((s) => s === '..')) return null;
   if (/[^a-zA-Z0-9/_-]/.test(clean)) return null;
@@ -48,7 +56,10 @@ function normalizeApiPath(raw) {
 
 function apiPathFromUrl(urlStr) {
   const raw = String((urlStr || '').split('?')[0] || '');
-  const clean = raw.replace(/^\/api\/tmdb\/?/, '').replace(/^\/+/, '').replace(/\/+$/, '');
+  const clean = raw
+    .replace(/^\/api\/tmdb\/?/, '')
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
   return normalizeApiPath(clean);
 }
 
@@ -62,7 +73,8 @@ async function proxyTMDB({ apiPath, queryString, tmdbApiKey, tmdbBearer }) {
   // cache key includes bearer mode so keys don't collide
   const cacheKey = useBearer ? `bearer:${url}` : url;
   const hit = cache.get(cacheKey);
-  if (hit && hit.expires > Date.now()) return { cached: true, body: hit.body, cacheCtrl: CACHE_CTRL };
+  if (hit && hit.expires > Date.now())
+    return { cached: true, body: hit.body, cacheCtrl: CACHE_CTRL };
   let lastError = null;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -71,14 +83,24 @@ async function proxyTMDB({ apiPath, queryString, tmdbApiKey, tmdbBearer }) {
       const upstream = await fetch(url, { headers });
       if (!upstream.ok) {
         lastError = { status: upstream.status };
-        if ((upstream.status === 429 || upstream.status >= 500) && attempt === 0) { await sleep(600); continue; }
+        if ((upstream.status === 429 || upstream.status >= 500) && attempt === 0) {
+          await sleep(600);
+          continue;
+        }
         break;
       }
       const body = await upstream.json();
       cache.set(cacheKey, { expires: Date.now() + CACHE_TTL, body });
       trimCache();
       return { cached: false, body, cacheCtrl: CACHE_CTRL };
-    } catch (err) { lastError = err; if (attempt === 0) { await sleep(600); continue; } break; }
+    } catch (err) {
+      lastError = err;
+      if (attempt === 0) {
+        await sleep(600);
+        continue;
+      }
+      break;
+    }
   }
   const stale = cache.get(cacheKey);
   if (stale) return { cached: true, body: stale.body, cacheCtrl: CACHE_CTRL, stale: true };
@@ -86,6 +108,16 @@ async function proxyTMDB({ apiPath, queryString, tmdbApiKey, tmdbBearer }) {
 }
 
 module.exports = {
-  TMDB_BASE, CACHE_TTL, CACHE_CTRL, cache, hits,
-  clientIp, isRateLimited, trimCache, normalizeApiPath, apiPathFromUrl, proxyTMDB, sleep,
+  TMDB_BASE,
+  CACHE_TTL,
+  CACHE_CTRL,
+  cache,
+  hits,
+  clientIp,
+  isRateLimited,
+  trimCache,
+  normalizeApiPath,
+  apiPathFromUrl,
+  proxyTMDB,
+  sleep,
 };

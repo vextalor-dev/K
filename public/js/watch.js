@@ -3,7 +3,19 @@
 // Fullscreen player page with VidKing embed
 // ============================================================
 
-import { $, qs, icon, load, save, readProgress, writeProgress, clearProgress, titleOf, yearOf, matchPct } from './utils.js';
+import {
+  $,
+  qs,
+  icon,
+  load,
+  save,
+  readProgress,
+  writeProgress,
+  clearProgress,
+  titleOf,
+  yearOf,
+  matchPct,
+} from './utils.js';
 import { reportEvent, reportError } from './utils.js';
 import { SUBTITLES, VIDKING } from './config.js';
 import { details } from './api.js';
@@ -17,9 +29,9 @@ let escHandler = null;
 
 const SUB_KEYS = { on: 'nkx-sub-on', off: 'nkx-sub-offset' };
 
-let subCues = [];      // parsed [{ start, end, text }]
+let subCues = []; // parsed [{ start, end, text }]
 let subOn = false;
-let subOffset = 0;     // seconds to nudge sync (+/-)
+let subOffset = 0; // seconds to nudge sync (+/-)
 let subEl = null;
 let ccBtn = null;
 let offsetLabel = null;
@@ -38,7 +50,7 @@ let lastLoopReport = 0;
 let lastSeekTs = 0;
 
 // seek state (command-first, reload fallback, verified via PLAYER_EVENT)
-let pendingSeek = null;        // { target, at }
+let pendingSeek = null; // { target, at }
 let seekReloadPending = false;
 
 const VIDKING_ORIGIN = 'https://www.vidking.net';
@@ -53,19 +65,24 @@ export function renderWatch(root) {
   const type = params.type === 'tv' ? 'tv' : 'movie';
   const id = Number(params.id);
 
-  if (!Number.isInteger(id) || id <= 0) { showError(root, 'Invalid media ID.'); return; }
+  if (!Number.isInteger(id) || id <= 0) {
+    showError(root, 'Invalid media ID.');
+    return;
+  }
 
   document.body.classList.add('watch-mode');
 
   // resume the saved episode when the URL doesn't specify one
   const progress = readProgress(type, id);
-  const season = params.season != null ? Number(params.season) || 1 : (progress?.season || 1);
-  const episode = params.episode != null ? Number(params.episode) || 1 : (progress?.episode || 1);
-  const resumeSec = progress && Number.isFinite(progress.seconds) ? Math.floor(progress.seconds) : 0;
+  const season = params.season != null ? Number(params.season) || 1 : progress?.season || 1;
+  const episode = params.episode != null ? Number(params.episode) || 1 : progress?.episode || 1;
+  const resumeSec =
+    progress && Number.isFinite(progress.seconds) ? Math.floor(progress.seconds) : 0;
 
-  const embedUrl = type === 'tv'
-    ? VIDKING.tv(id, season, episode, { progress: resumeSec })
-    : VIDKING.movie(id, { progress: resumeSec });
+  const embedUrl =
+    type === 'tv'
+      ? VIDKING.tv(id, season, episode, { progress: resumeSec })
+      : VIDKING.movie(id, { progress: resumeSec });
 
   root.innerHTML = `
     <div class="watch-player">
@@ -136,16 +153,19 @@ export function renderWatch(root) {
 
   // subtitles: only tv shows currently have local SRT files
   const subKey = `tv:${id}:${season}:${episode}`;
-  const subFile = type === 'tv' && SUBTITLES[id] && SUBTITLES[id].season === season
-    ? SUBTITLES[id].episodes[episode]
-    : null;
+  const subFile =
+    type === 'tv' && SUBTITLES[id] && SUBTITLES[id].season === season
+      ? SUBTITLES[id].episodes[episode]
+      : null;
   const subOffKey = `${SUB_KEYS.off}:${subKey}`;
   if (subFile) {
     subOffset = load(subOffKey, 0) || 0;
     subOn = load(`${SUB_KEYS.on}:${subKey}`, true) !== false;
     subPanel.style.display = '';
     updateOffsetUI();
-    loadSubtitles(subFile).then(() => { if (subOn) ccBtn?.classList.add('on'); });
+    loadSubtitles(subFile).then(() => {
+      if (subOn) ccBtn?.classList.add('on');
+    });
   }
 
   ccBtn?.addEventListener('click', () => {
@@ -155,8 +175,16 @@ export function renderWatch(root) {
     if (!subOn) clearCaption();
   });
 
-  subMinus?.addEventListener('click', () => { subOffset += 0.25; save(subOffKey, subOffset); updateOffsetUI(); });
-  subPlus?.addEventListener('click', () => { subOffset -= 0.25; save(subOffKey, subOffset); updateOffsetUI(); });
+  subMinus?.addEventListener('click', () => {
+    subOffset += 0.25;
+    save(subOffKey, subOffset);
+    updateOffsetUI();
+  });
+  subPlus?.addEventListener('click', () => {
+    subOffset -= 0.25;
+    save(subOffKey, subOffset);
+    updateOffsetUI();
+  });
 
   // transport (rewind / forward 10s) — TV remote support
   $('.watch-seek-back', root)?.addEventListener('click', () => playerSeek(-10));
@@ -201,13 +229,20 @@ export function renderWatch(root) {
     try {
       const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
       if (!data || typeof data !== 'object') return;
-      const evt = data.type === 'PLAYER_EVENT' && data.data && typeof data.data === 'object'
-        ? data.data
-        : data;
+      const evt =
+        data.type === 'PLAYER_EVENT' && data.data && typeof data.data === 'object'
+          ? data.data
+          : data;
       // The embed is a third party we don't control - validate every field
       // type before trusting it.
-      if (typeof evt.currentTime !== 'number' || !Number.isFinite(evt.currentTime) || evt.currentTime < 0) return;
-      if (typeof evt.duration !== 'number' || !Number.isFinite(evt.duration) || evt.duration <= 0) return;
+      if (
+        typeof evt.currentTime !== 'number' ||
+        !Number.isFinite(evt.currentTime) ||
+        evt.currentTime < 0
+      )
+        return;
+      if (typeof evt.duration !== 'number' || !Number.isFinite(evt.duration) || evt.duration <= 0)
+        return;
       playerTime = evt.currentTime;
       playerDuration = evt.duration;
 
@@ -224,7 +259,9 @@ export function renderWatch(root) {
           // reload is in flight - the command was ignored
           reportEvent('seek-failed', {
             message: 'Seek command ignored, reload did not run.',
-            target: pendingSeek.target, time: evt.currentTime, duration: evt.duration,
+            target: pendingSeek.target,
+            time: evt.currentTime,
+            duration: evt.duration,
             url: iframeEl && iframeEl.src,
           });
           pendingSeek = null;
@@ -234,14 +271,23 @@ export function renderWatch(root) {
       // loop detection: the player keeps jumping backward without a seek
       // (matches the "stuck bouncing between 11 and 12 seconds" bug).
       const evtNow = Date.now();
-      if (evtNow - lastSeekTs > 1500 && lastEventTime >= 0 && evt.currentTime < lastEventTime - 0.5) {
+      if (
+        evtNow - lastSeekTs > 1500 &&
+        lastEventTime >= 0 &&
+        evt.currentTime < lastEventTime - 0.5
+      ) {
         loopDrops++;
         if (loopDrops >= 3 && evtNow - lastLoopReport > 60000) {
           lastLoopReport = evtNow;
           reportEvent('player-loop', {
             message: 'Player repeatedly jumped backward (possible stuck loop).',
-            type, id, season, episode,
-            time: evt.currentTime, last: lastEventTime, duration: evt.duration,
+            type,
+            id,
+            season,
+            episode,
+            time: evt.currentTime,
+            last: lastEventTime,
+            duration: evt.duration,
             url: iframeEl && iframeEl.src,
           });
         }
@@ -253,18 +299,26 @@ export function renderWatch(root) {
       if (subOn && subEl && subCues.length) renderCaption(evt.currentTime + subOffset);
       const prog = evt.currentTime / evt.duration;
       const now = Date.now();
-      if (prog > 0.01 && prog < 0.98 && now - lastSaveAt > 5000 && Math.abs(prog - lastSavedProg) > 0.01) {
+      if (
+        prog > 0.01 &&
+        prog < 0.98 &&
+        now - lastSaveAt > 5000 &&
+        Math.abs(prog - lastSavedProg) > 0.01
+      ) {
         lastSaveAt = now;
         lastSavedProg = prog;
         writeProgress({
-          type, id,
+          type,
+          id,
           title: (detInfo && titleOf(detInfo)) || titleEl.textContent,
           poster: detInfo?.poster_path || null,
           backdrop: detInfo?.backdrop_path || null,
           vote: detInfo?.vote_average || 0,
           year: detInfo?.release_date || detInfo?.first_air_date || '',
           seconds: Math.floor(evt.currentTime),
-          progress: prog, season, episode,
+          progress: prog,
+          season,
+          episode,
         });
       }
     } catch (err) {
@@ -274,7 +328,9 @@ export function renderWatch(root) {
   window.addEventListener('message', messageHandler);
 
   // escape to leave the player
-  escHandler = (e) => { if (e.key === 'Escape') window.history.back(); };
+  escHandler = (e) => {
+    if (e.key === 'Escape') window.history.back();
+  };
   document.addEventListener('keydown', escHandler);
 
   // Next Episode / Play Again + Restart-from-beginning actions (watch info area)
@@ -337,9 +393,10 @@ async function loadDetails(type, id, season, episode, titleEl, metaEl, descEl, o
     const year = yearOf(det);
     const rating = matchPct(det.vote_average);
 
-    titleEl.textContent = type === 'tv'
-      ? `${title} - S${String(season).padStart(2, '0')} E${String(episode).padStart(2, '0')}`
-      : title;
+    titleEl.textContent =
+      type === 'tv'
+        ? `${title} - S${String(season).padStart(2, '0')} E${String(episode).padStart(2, '0')}`
+        : title;
 
     metaEl.innerHTML = `
       <span>${typeLabel}</span>
@@ -362,8 +419,10 @@ function nextEpisodeTarget(det, curSeason, curEpisode) {
   const cur = seasons.find((s) => Number(s.season_number) === curSeason);
   const epsInCur = cur && Number.isFinite(cur.episode_count) ? Number(cur.episode_count) : null;
   if (epsInCur == null) return null;
-  if (curEpisode < epsInCur) return { season: curSeason, episode: curEpisode + 1, label: 'Next Episode' };
-  if (Number.isFinite(numSeasons) && curSeason < numSeasons) return { season: curSeason + 1, episode: 1, label: 'Next Episode' };
+  if (curEpisode < epsInCur)
+    return { season: curSeason, episode: curEpisode + 1, label: 'Next Episode' };
+  if (Number.isFinite(numSeasons) && curSeason < numSeasons)
+    return { season: curSeason + 1, episode: 1, label: 'Next Episode' };
   if (!Number.isFinite(numSeasons)) return null;
   return { season: 1, episode: 1, label: 'Play Again' };
 }
@@ -386,23 +445,33 @@ async function loadSubtitles(path) {
     if (!res.ok) return;
     const text = await res.text();
     subCues = parseSrt(text);
-  } catch { subCues = []; }
+  } catch {
+    subCues = [];
+  }
 }
 
 function parseSrt(text) {
   const cues = [];
-  const blocks = String(text).replace(/\r/g, '').split(/\n{2,}/);
+  const blocks = String(text)
+    .replace(/\r/g, '')
+    .split(/\n{2,}/);
   for (const block of blocks) {
-    const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-    const timeLine = lines.find(l => l.includes('-->'));
+    const lines = block
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const timeLine = lines.find((l) => l.includes('-->'));
     if (!timeLine) continue;
-    const m = timeLine.match(/(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})/);
+    const m = timeLine.match(
+      /(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})/
+    );
     if (!m) continue;
-    const toSec = (h, mi, s, ms) => Number(h) * 3600 + Number(mi) * 60 + Number(s) + Number(ms) / 1000;
+    const toSec = (h, mi, s, ms) =>
+      Number(h) * 3600 + Number(mi) * 60 + Number(s) + Number(ms) / 1000;
     const start = toSec(m[1], m[2], m[3], m[4]);
     const end = toSec(m[5], m[6], m[7], m[8]);
     const idx = lines.indexOf(timeLine);
-    const textLines = lines.slice(idx + 1).filter(l => !/^\d+$/.test(l));
+    const textLines = lines.slice(idx + 1).filter((l) => !/^\d+$/.test(l));
     if (!textLines.length) continue;
     cues.push({ start, end, text: textLines.join('\n').replace(/<[^>]+>/g, '') });
   }
@@ -420,7 +489,10 @@ function renderCaption(t) {
     // linear scan from the previous position is fine (cues are chronological)
     for (let k = 0; k < subCues.length; k++) {
       if (t < subCues[k].start) break;
-      if (t >= subCues[k].start && t < subCues[k].end) { i = k; break; }
+      if (t >= subCues[k].start && t < subCues[k].end) {
+        i = k;
+        break;
+      }
     }
     activeCueIdx = i;
   }
@@ -476,7 +548,7 @@ export function playerSeek(delta) {
   try {
     iframeEl.contentWindow.postMessage(
       { type: 'PLAYER_COMMAND', data: { action: 'seek', to: Math.floor(target) } },
-      VIDKING_ORIGIN,
+      VIDKING_ORIGIN
     );
   } catch {}
 
@@ -506,7 +578,8 @@ function seekViaReload(target) {
     if (seekReloadPending && pendingSeek) {
       reportEvent('seek-stalled', {
         message: 'No player events after seek reload (autoplay blocked or embed failed).',
-        target, url: iframeEl && iframeEl.src,
+        target,
+        url: iframeEl && iframeEl.src,
       });
       pendingSeek = null;
       seekReloadPending = false;

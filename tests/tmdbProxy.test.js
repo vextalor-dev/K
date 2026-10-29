@@ -13,7 +13,9 @@ describe('tmdb proxy paths', () => {
     expect(normalizeApiPath('/movie/popular/')).toBe('movie/popular');
   });
   it('apiPathFromUrl strips prefix', () => {
-    expect(apiPathFromUrl('/api/tmdb/trending/movie/day?language=en-US')).toBe('trending/movie/day');
+    expect(apiPathFromUrl('/api/tmdb/trending/movie/day?language=en-US')).toBe(
+      'trending/movie/day'
+    );
     expect(apiPathFromUrl('/trending/tv/week')).toBe('trending/tv/week');
     expect(apiPathFromUrl('/api/tmdb/')).toBeNull();
   });

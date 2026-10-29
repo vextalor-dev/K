@@ -20,7 +20,7 @@
 }
 
 .row-title::before {
-  content: "";
+  content: '';
   width: 3px;
   height: 20px;
   background: var(--primary);
@@ -79,13 +79,13 @@
 
 .row-arrow.left {
   left: 0;
-  background: linear-gradient(90deg, rgba(5,7,10,0.9), transparent);
+  background: linear-gradient(90deg, rgba(5, 7, 10, 0.9), transparent);
   border-radius: 0 8px 8px 0;
 }
 
 .row-arrow.right {
   right: 0;
-  background: linear-gradient(270deg, rgba(5,7,10,0.9), transparent);
+  background: linear-gradient(270deg, rgba(5, 7, 10, 0.9), transparent);
   border-radius: 8px 0 0 8px;
 }
 
@@ -130,7 +130,9 @@
   font-weight: 600;
   color: var(--text-hi);
   background: var(--primary);
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .row-error .btn-retry:hover,
@@ -154,8 +156,12 @@
 
 /* skeleton shimmer (rows + grids) */
 @keyframes k-row-shimmer {
-  from { background-position: 200% 0; }
-  to { background-position: -200% 0; }
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .row-track .card-skeleton,
@@ -163,8 +169,12 @@
   pointer-events: none;
   user-select: none;
   scroll-snap-align: none;
-  background:
-    linear-gradient(90deg, var(--surface-1) 0%, var(--surface-2) 45%, var(--surface-1) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--surface-1) 0%,
+    var(--surface-2) 45%,
+    var(--surface-1) 100%
+  );
   background-size: 200% 100%;
   animation: k-row-shimmer 1.8s ease-in-out infinite;
 }
@@ -191,7 +201,7 @@
 }
 
 .grid-page-title::before {
-  content: "";
+  content: '';
   width: 3px;
   height: 20px;
   background: var(--primary);
@@ -245,19 +255,22 @@
 }
 
 .page-hero::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(90deg, rgba(5,7,10,0.82) 0%, rgba(5,7,10,0.4) 55%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(5, 7, 10, 0.82) 0%,
+    rgba(5, 7, 10, 0.4) 55%,
+    transparent 100%
+  );
 }
 
 .page-hero::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(180deg, rgba(5,7,10,0.55) 0%, transparent 35%, var(--bg) 100%);
+  background: linear-gradient(180deg, rgba(5, 7, 10, 0.55) 0%, transparent 35%, var(--bg) 100%);
 }
 
 .page-hero > * {

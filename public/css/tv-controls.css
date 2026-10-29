@@ -5,7 +5,9 @@
    ============================================================ */
 
 /* --- focus rings: Netflix white ring, no default outline --- */
-body.tv-mode :focus { outline: none; }
+body.tv-mode :focus {
+  outline: none;
+}
 
 /* hide-on-scroll must never hide the header in TV mode (spatial nav relies
    on it being reachable, and isVisible() skips `.nav-hidden` anyway) */
@@ -16,7 +18,7 @@ body.tv-mode .nav {
 body.tv-mode :focus-visible,
 body.tv-mode button:focus,
 body.tv-mode a:focus,
-body.tv-mode [role="button"]:focus,
+body.tv-mode [role='button']:focus,
 body.tv-mode [tabindex]:focus {
   outline: 3px solid #fff;
   outline-offset: 3px;
@@ -36,32 +38,53 @@ body.tv-mode .grid-card:focus,
 body.tv-mode .season-select:focus {
   outline: 3px solid #fff;
   outline-offset: 3px;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25), 0 0 24px rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.25),
+    0 0 24px rgba(255, 255, 255, 0.28);
 }
 
 /* --- horizontal-row cards: scale the artwork, ring the media --- */
-body.tv-mode .card:focus { outline: none; }
+body.tv-mode .card:focus {
+  outline: none;
+}
 
 body.tv-mode .card .card-media {
-  transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+  transition:
+    transform 0.28s ease,
+    border-color 0.28s ease,
+    box-shadow 0.28s ease;
 }
 
 body.tv-mode .card:focus .card-media {
   transform: scale(1.08);
   border-color: #fff;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 0 28px rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.9),
+    0 0 28px rgba(255, 255, 255, 0.35);
   z-index: 6;
 }
 
-body.tv-mode .card:focus .card-poster { transform: scale(1.06); }
+body.tv-mode .card:focus .card-poster {
+  transform: scale(1.06);
+}
 body.tv-mode .card:focus .card-filter,
-body.tv-mode .card:focus .card-play { opacity: 1; }
-body.tv-mode .card:focus .card-title { color: #fff; }
+body.tv-mode .card:focus .card-play {
+  opacity: 1;
+}
+body.tv-mode .card:focus .card-title {
+  color: #fff;
+}
 
 /* grid cards */
-body.tv-mode .grid-card:focus img { transform: scale(1.06); }
-body.tv-mode .grid-card:focus .gc-overlay { opacity: 1; }
-body.tv-mode .grid-card:focus .gc-remove { display: flex; }
+body.tv-mode .grid-card:focus img {
+  transform: scale(1.06);
+}
+body.tv-mode .grid-card:focus .gc-overlay {
+  opacity: 1;
+}
+body.tv-mode .grid-card:focus .gc-remove {
+  display: flex;
+}
 
 /* --- watch page: transport bar + toast --- */
 .watch-transport {
@@ -99,8 +122,12 @@ body.tv-mode .grid-card:focus .gc-remove { display: flex; }
   height: 15px;
 }
 
-.watch-transport .btn:first-child .icon { margin-right: 6px; }
-.watch-transport .btn:last-child .icon { margin-left: 6px; }
+.watch-transport .btn:first-child .icon {
+  margin-right: 6px;
+}
+.watch-transport .btn:last-child .icon {
+  margin-left: 6px;
+}
 
 .watch-toast {
   position: fixed;
@@ -121,7 +148,9 @@ body.tv-mode .grid-card:focus .gc-remove { display: flex; }
   transition: opacity 0.25s ease;
 }
 
-.watch-toast.show { opacity: 1; }
+.watch-toast.show {
+  opacity: 1;
+}
 
 /* TV remote should still be able to reach hidden watch controls */
 body.tv-mode .watch-back:focus,

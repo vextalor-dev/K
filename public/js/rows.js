@@ -27,7 +27,11 @@ export function buildRow(container, { title, items, opts = {}, type } = {}) {
 
   // add cards
   (items || []).forEach((item, i) => {
-    const card = makeCard(item, { ...opts, type: type || undefined, rank: opts.rank ? i + 1 : undefined });
+    const card = makeCard(item, {
+      ...opts,
+      type: type || undefined,
+      rank: opts.rank ? i + 1 : undefined,
+    });
     track.appendChild(card);
   });
 
@@ -38,8 +42,14 @@ export function buildRow(container, { title, items, opts = {}, type } = {}) {
     arrowL.classList.toggle('disabled', track.scrollLeft <= 2);
     arrowR.classList.toggle('disabled', track.scrollLeft >= max - 2);
   };
-  arrowL.addEventListener('click', () => { track.scrollBy({ left: -scrollAmt(), behavior: 'smooth' }); updateArrowState(); });
-  arrowR.addEventListener('click', () => { track.scrollBy({ left: scrollAmt(), behavior: 'smooth' }); updateArrowState(); });
+  arrowL.addEventListener('click', () => {
+    track.scrollBy({ left: -scrollAmt(), behavior: 'smooth' });
+    updateArrowState();
+  });
+  arrowR.addEventListener('click', () => {
+    track.scrollBy({ left: scrollAmt(), behavior: 'smooth' });
+    updateArrowState();
+  });
   track.addEventListener('scroll', updateArrowState);
   updateArrowState();
 
@@ -75,8 +85,9 @@ export async function buildApiRow(container, { title, promise, load, type, opts 
   const loader = typeof load === 'function' ? load : () => promise;
 
   const showSkeleton = () => {
-    track.innerHTML = Array.from({ length: 7 }, () =>
-      '<div class="card-skeleton" aria-hidden="true" tabindex="-1"></div>'
+    track.innerHTML = Array.from(
+      { length: 7 },
+      () => '<div class="card-skeleton" aria-hidden="true" tabindex="-1"></div>'
     ).join('');
   };
 
@@ -126,7 +137,7 @@ export async function buildApiRow(container, { title, promise, load, type, opts 
   const loadRow = async () => {
     try {
       const data = await loader();
-      const list = (data.results || []).filter(i => i.poster_path || i.backdrop_path);
+      const list = (data.results || []).filter((i) => i.poster_path || i.backdrop_path);
       track.innerHTML = '';
       if (!list.length) {
         showEmpty();
@@ -149,8 +160,14 @@ export async function buildApiRow(container, { title, promise, load, type, opts 
     arrowL.classList.toggle('disabled', track.scrollLeft <= 2);
     arrowR.classList.toggle('disabled', track.scrollLeft >= max - 2);
   };
-  arrowL.addEventListener('click', () => { track.scrollBy({ left: -scrollAmt(), behavior: 'smooth' }); updateArrowState(); });
-  arrowR.addEventListener('click', () => { track.scrollBy({ left: scrollAmt(), behavior: 'smooth' }); updateArrowState(); });
+  arrowL.addEventListener('click', () => {
+    track.scrollBy({ left: -scrollAmt(), behavior: 'smooth' });
+    updateArrowState();
+  });
+  arrowR.addEventListener('click', () => {
+    track.scrollBy({ left: scrollAmt(), behavior: 'smooth' });
+    updateArrowState();
+  });
   track.addEventListener('scroll', updateArrowState);
   row.addEventListener('mouseenter', () => row.classList.add('hover'));
   row.addEventListener('mouseleave', () => row.classList.remove('hover'));
@@ -164,7 +181,10 @@ export async function buildApiRow(container, { title, promise, load, type, opts 
 // ---------------------------------------------------------------
 // Build a responsive grid page (My List, Search, Genre, etc.)
 // ---------------------------------------------------------------
-export function buildGrid(container, { title, items, renderItem, emptyMsg = 'No items found.' } = {}) {
+export function buildGrid(
+  container,
+  { title, items, renderItem, emptyMsg = 'No items found.' } = {}
+) {
   const page = document.createElement('div');
   page.className = 'grid-page';
   page.innerHTML = `

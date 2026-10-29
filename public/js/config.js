@@ -25,8 +25,10 @@ export const VIDKING = {
   },
   tv(id, season, episode, opts = {}) {
     const p = new URLSearchParams({
-      color: 'dc2626', autoPlay: 'true',
-      nextEpisode: 'true', episodeSelector: 'true',
+      color: 'dc2626',
+      autoPlay: 'true',
+      nextEpisode: 'true',
+      episodeSelector: 'true',
     });
     if (opts.progress) p.set('progress', String(Math.floor(opts.progress)));
     return `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?${p.toString()}`;
@@ -38,9 +40,14 @@ export const imgUrl = (path, size = 'w500') =>
 
 export const trailerUrl = (key, { autoplay = false, controls = true } = {}) => {
   const p = new URLSearchParams({
-    autoplay: autoplay ? '1' : '0', mute: autoplay ? '1' : '0',
-    controls: controls ? '1' : '0', loop: autoplay ? '1' : '0',
-    playlist: key, rel: '0', modestbranding: '1', playsinline: '1',
+    autoplay: autoplay ? '1' : '0',
+    mute: autoplay ? '1' : '0',
+    controls: controls ? '1' : '0',
+    loop: autoplay ? '1' : '0',
+    playlist: key,
+    rel: '0',
+    modestbranding: '1',
+    playsinline: '1',
   });
   return `https://www.youtube-nocookie.com/embed/${key}?${p.toString()}`;
 };
@@ -48,7 +55,8 @@ export const trailerUrl = (key, { autoplay = false, controls = true } = {}) => {
 // Local subtitle manifest: TMDB tv id -> { season, episodes: { ep: '/subs/...srt' } }
 // Files are voice-synced (official streaming release timings).
 export const SUBTITLES = {
-  229915: { // Night Has Come (2023)
+  229915: {
+    // Night Has Come (2023)
     season: 1,
     episodes: {
       1: '/subs/night-has-come/s01e01.srt',
@@ -91,20 +99,50 @@ export const ANIME_IDS = [
 ];
 
 export const GENRES = {
-  28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy',
-  80: 'Crime', 99: 'Documentary', 18: 'Drama', 10751: 'Family',
-  14: 'Fantasy', 36: 'History', 27: 'Horror', 10402: 'Music',
-  9648: 'Mystery', 10749: 'Romance', 878: 'Sci-Fi',
-  10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
-  10762: 'Kids', 10765: 'Sci-Fi & Fantasy', 10764: 'Reality', 10759: 'Action & Adventure',
+  28: 'Action',
+  12: 'Adventure',
+  16: 'Animation',
+  35: 'Comedy',
+  80: 'Crime',
+  99: 'Documentary',
+  18: 'Drama',
+  10751: 'Family',
+  14: 'Fantasy',
+  36: 'History',
+  27: 'Horror',
+  10402: 'Music',
+  9648: 'Mystery',
+  10749: 'Romance',
+  878: 'Sci-Fi',
+  10770: 'TV Movie',
+  53: 'Thriller',
+  10752: 'War',
+  37: 'Western',
+  10762: 'Kids',
+  10765: 'Sci-Fi & Fantasy',
+  10764: 'Reality',
+  10759: 'Action & Adventure',
 };
 
 export const GENRE_MOODS = {
-  28: 'Exciting', 12: 'Adventurous', 16: 'Charming', 35: 'Funny',
-  80: 'Intense', 99: 'Informative', 18: 'Emotional', 10751: 'Feel-good',
-  14: 'Fantastical', 36: 'Historical', 27: 'Scary', 10402: 'Musical',
-  9648: 'Intriguing', 10749: 'Romantic', 878: 'Mind-bending',
-  53: 'Suspenseful', 10752: 'War', 37: 'Western',
+  28: 'Exciting',
+  12: 'Adventurous',
+  16: 'Charming',
+  35: 'Funny',
+  80: 'Intense',
+  99: 'Informative',
+  18: 'Emotional',
+  10751: 'Feel-good',
+  14: 'Fantastical',
+  36: 'Historical',
+  27: 'Scary',
+  10402: 'Musical',
+  9648: 'Intriguing',
+  10749: 'Romantic',
+  878: 'Mind-bending',
+  53: 'Suspenseful',
+  10752: 'War',
+  37: 'Western',
 };
 
 export const LANGUAGES = [
@@ -123,13 +161,22 @@ export const LANGUAGES = [
 ];
 
 export const BROWSE_GENRES = [
-  { id: 28, label: 'Action' }, { id: 35, label: 'Comedy' },
-  { id: 27, label: 'Horror' }, { id: 878, label: 'Sci-Fi' },
-  { id: 18, label: 'Drama' }, { id: 10749, label: 'Romance' },
-  { id: 80, label: 'Crime' }, { id: 99, label: 'Documentary' },
-  { id: 16, label: 'Animation' }, { id: 14, label: 'Fantasy' },
-  { id: 53, label: 'Thriller' }, { id: 10751, label: 'Family' },
-  { id: 12, label: 'Adventure' }, { id: 10402, label: 'Music' },
-  { id: 9648, label: 'Mystery' }, { id: 36, label: 'History' },
-  { id: 10752, label: 'War' }, { id: 37, label: 'Western' },
+  { id: 28, label: 'Action' },
+  { id: 35, label: 'Comedy' },
+  { id: 27, label: 'Horror' },
+  { id: 878, label: 'Sci-Fi' },
+  { id: 18, label: 'Drama' },
+  { id: 10749, label: 'Romance' },
+  { id: 80, label: 'Crime' },
+  { id: 99, label: 'Documentary' },
+  { id: 16, label: 'Animation' },
+  { id: 14, label: 'Fantasy' },
+  { id: 53, label: 'Thriller' },
+  { id: 10751, label: 'Family' },
+  { id: 12, label: 'Adventure' },
+  { id: 10402, label: 'Music' },
+  { id: 9648, label: 'Mystery' },
+  { id: 36, label: 'History' },
+  { id: 10752, label: 'War' },
+  { id: 37, label: 'Western' },
 ];

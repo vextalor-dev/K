@@ -48,9 +48,9 @@
   pointer-events: none;
   z-index: 2;
   background:
-    linear-gradient(180deg, transparent 40%, rgba(5,7,10,0.92) 88%, var(--bg) 100%),
-    linear-gradient(90deg, rgba(5,7,10,0.78) 0%, rgba(5,7,10,0.35) 42%, transparent 65%),
-    linear-gradient(180deg, rgba(5,7,10,0.6) 0%, transparent 35%);
+    linear-gradient(180deg, transparent 40%, rgba(5, 7, 10, 0.92) 88%, var(--bg) 100%),
+    linear-gradient(90deg, rgba(5, 7, 10, 0.78) 0%, rgba(5, 7, 10, 0.35) 42%, transparent 65%),
+    linear-gradient(180deg, rgba(5, 7, 10, 0.6) 0%, transparent 35%);
 }
 
 /* subtle red glow in upper-right corner */
@@ -60,7 +60,12 @@
   top: -10%;
   width: 50%;
   height: 55%;
-  background: radial-gradient(ellipse at center, rgba(220, 38, 38, 0.14) 0%, rgba(220, 38, 38, 0.06) 30%, transparent 60%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(220, 38, 38, 0.14) 0%,
+    rgba(220, 38, 38, 0.06) 30%,
+    transparent 60%
+  );
   z-index: 1;
   filter: blur(40px);
   pointer-events: none;
@@ -184,7 +189,9 @@
   cursor: pointer;
   box-shadow: 0 0 0 1px rgba(5, 7, 10, 0.3);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg) 30%, transparent);
-  transition: background 0.3s ease, width 0.3s ease;
+  transition:
+    background 0.3s ease,
+    width 0.3s ease;
 }
 
 .hero-dot:hover {
@@ -195,8 +202,12 @@
 .hero-dot.active {
   width: 44px;
   background: var(--primary);
-  box-shadow: 0 0 0 1px rgba(5, 7, 10, 0.3), 0 0 12px var(--accent-glow);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg) 30%, transparent), 0 0 12px var(--accent-glow);
+  box-shadow:
+    0 0 0 1px rgba(5, 7, 10, 0.3),
+    0 0 12px var(--accent-glow);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--bg) 30%, transparent),
+    0 0 12px var(--accent-glow);
 }
 
 /* hero loading / error states */
@@ -211,7 +222,7 @@
 }
 
 .hero-loading::after {
-  content: "";
+  content: '';
   width: 34px;
   height: 34px;
   border: 3px solid var(--border-subtle);

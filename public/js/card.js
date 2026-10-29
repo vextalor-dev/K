@@ -4,8 +4,20 @@
 // ============================================================
 
 import {
-  $, $$, esc, clamp, icon, onEnter, matchPct, yearOf, titleOf, mediaTypeOf,
-  posterOf, backdropOf, stillOf, hms,
+  $,
+  $$,
+  esc,
+  clamp,
+  icon,
+  onEnter,
+  matchPct,
+  yearOf,
+  titleOf,
+  mediaTypeOf,
+  posterOf,
+  backdropOf,
+  stillOf,
+  hms,
 } from './utils.js';
 import * as api from './api.js';
 import { inList, toggle as toggleList, getReaction, setReaction } from './mylist.js';
@@ -21,7 +33,10 @@ const fallbackNode = () => {
 export const detailFor = (type, id) => {
   const key = `${type}:${id}`;
   if (!detailCache.has(key)) {
-    const p = api.details(type, id).catch((err) => { detailCache.delete(key); throw err; });
+    const p = api.details(type, id).catch((err) => {
+      detailCache.delete(key);
+      throw err;
+    });
     detailCache.set(key, p);
   }
   return detailCache.get(key);
@@ -34,7 +49,8 @@ export const openDetail = (type, id) => {
 };
 
 export const openWatch = (type, id, season, episode) => {
-  if (type === 'tv') location.href = `/watch?type=tv&id=${id}&season=${season || 1}&episode=${episode || 1}`;
+  if (type === 'tv')
+    location.href = `/watch?type=tv&id=${id}&season=${season || 1}&episode=${episode || 1}`;
   else location.href = `/watch?type=movie&id=${id}`;
 };
 
@@ -47,9 +63,12 @@ export function makeCard(item, opts = {}) {
   const id = item.id;
   const title = titleOf(item);
   const poster = opts.poster || posterOf(item);
-  const progress = opts.progress != null
-    ? clamp(opts.progress, 0, 1)
-    : (item.progress != null ? clamp(item.progress, 0, 1) : null);
+  const progress =
+    opts.progress != null
+      ? clamp(opts.progress, 0, 1)
+      : item.progress != null
+        ? clamp(item.progress, 0, 1)
+        : null;
   const lazy = opts.lazy !== false;
   const rank = opts.rank != null ? Number(opts.rank) : null;
 
@@ -75,12 +94,16 @@ export function makeCard(item, opts = {}) {
       <div class="card-filter"></div>
       <div class="card-play">${icon('play')}</div>
       ${progress != null ? `<div class="card-progress"><span style="width:${(progress * 100).toFixed(1)}%"></span></div>` : ''}
-      ${rank != null ? `
+      ${
+        rank != null
+          ? `
         <div class="card-rank-flag">
           <span class="rank-label">Top</span>
           <span class="rank-num">${String(rank).padStart(2, '0')}</span>
         </div>
-      ` : ''}
+      `
+          : ''
+      }
     </div>
     <div class="card-meta">
       <div class="card-title">${esc(title)}</div>
@@ -138,7 +161,7 @@ export function makeGridCard(item, { onRemove } = {}) {
 
   $('.gc-remove', el).addEventListener('click', (e) => {
     e.stopPropagation();
-    import('./mylist.js').then(m => m.remove(id, type));
+    import('./mylist.js').then((m) => m.remove(id, type));
     if (onRemove) onRemove(el);
   });
 

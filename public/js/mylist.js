@@ -33,7 +33,11 @@ export const add = (item) => {
   return false;
 };
 
-export const remove = (id, type) => save(KEY, getList().filter((x) => !(x.id === id && x.type === type)));
+export const remove = (id, type) =>
+  save(
+    KEY,
+    getList().filter((x) => !(x.id === id && x.type === type))
+  );
 
 export const toggle = (item) => {
   if (inList(item.id, item.type)) {
@@ -77,7 +81,10 @@ export const likedItems = () => {
         const [type, id] = k.split(':');
         return { type, id: Number(id) };
       })
-      .filter((x) => x.type && (x.type === 'movie' || x.type === 'tv') && Number.isInteger(x.id) && x.id > 0);
+      .filter(
+        (x) =>
+          x.type && (x.type === 'movie' || x.type === 'tv') && Number.isInteger(x.id) && x.id > 0
+      );
   } catch {
     return [];
   }

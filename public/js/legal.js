@@ -43,15 +43,15 @@ export function renderTerms(root) {
     sec(
       '4. Prohibited Conduct',
       `<p>You agree not to, and not to attempt to:</p>` +
-      ul([
-        'Scrape, crawl, spider, harvest, or programmatically collect any data, content, identifiers, or metadata from K by any automated means whatsoever, including without limitation scripts, bots, or agents, regardless of volume.',
-        'Circumvent, disable, interfere with, or bypass any access control, rate limit, cache, or technical restriction on K or on any third-party service it references.',
-        'Rebroadcast, redistribute, reframe, mirror, embed, or publicly perform any content accessed through K, including in part.',
-        'Reverse engineer, decompile, or disassemble any portion of K or probe, scan, or test its infrastructure.',
-        'Use K for any unlawful, infringing, or fraudulent purpose, or to facilitate any such activity.',
-        'Impersonate any person, misrepresent your identity, or attempt to avoid an existing block or restriction.',
-        'Attempt to interfere with the proper functioning of K, including via denial-of-service, flooding, or excessive automated requests.'
-      ])
+        ul([
+          'Scrape, crawl, spider, harvest, or programmatically collect any data, content, identifiers, or metadata from K by any automated means whatsoever, including without limitation scripts, bots, or agents, regardless of volume.',
+          'Circumvent, disable, interfere with, or bypass any access control, rate limit, cache, or technical restriction on K or on any third-party service it references.',
+          'Rebroadcast, redistribute, reframe, mirror, embed, or publicly perform any content accessed through K, including in part.',
+          'Reverse engineer, decompile, or disassemble any portion of K or probe, scan, or test its infrastructure.',
+          'Use K for any unlawful, infringing, or fraudulent purpose, or to facilitate any such activity.',
+          'Impersonate any person, misrepresent your identity, or attempt to avoid an existing block or restriction.',
+          'Attempt to interfere with the proper functioning of K, including via denial-of-service, flooding, or excessive automated requests.',
+        ])
     ),
     sec(
       '5. No Warranties',
@@ -104,15 +104,15 @@ export function renderTermsOfUse(root) {
     sec(
       '2. What You May Not Do',
       `<p>You may not, under any circumstances:</p>` +
-      ul([
-        'Use bots, scripts, scrapers, or any automated process to access, copy, or monitor K or any part of it.',
-        'Hotlink, mirror, reframe, or re-embed K or any of its content on any other site or app.',
-        'Resell, lease, sublicense, or commercially exploit access to K or its content, in whole or in part.',
-        'Access K through any VPN, proxy, or anonymizer for the purpose of evading a block, restriction, or rate limit.',
-        'Use K to distribute or amplify any unlawful, defamatory, or infringing material.',
-        'Probe, test, or attack K\u2019s infrastructure, APIs, or any connected service.',
-        'Attempt to conceal, alter, or spoof your device, browser, or identity to bypass any limitation we impose.'
-      ])
+        ul([
+          'Use bots, scripts, scrapers, or any automated process to access, copy, or monitor K or any part of it.',
+          'Hotlink, mirror, reframe, or re-embed K or any of its content on any other site or app.',
+          'Resell, lease, sublicense, or commercially exploit access to K or its content, in whole or in part.',
+          'Access K through any VPN, proxy, or anonymizer for the purpose of evading a block, restriction, or rate limit.',
+          'Use K to distribute or amplify any unlawful, defamatory, or infringing material.',
+          'Probe, test, or attack K\u2019s infrastructure, APIs, or any connected service.',
+          'Attempt to conceal, alter, or spoof your device, browser, or identity to bypass any limitation we impose.',
+        ])
     ),
     sec(
       '3. Abuse, Monitoring, and Blocking',

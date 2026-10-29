@@ -5,7 +5,18 @@ const path = require('path');
 
 const BASE = process.env.SITE_URL || 'https://k-movies.jo3.org';
 const routes = [
-  '', 'movies', 'tv', 'anime', 'search', 'new', 'languages', 'kids', 'mylist', 'latest', 'terms', 'terms-of-use',
+  '',
+  'movies',
+  'tv',
+  'anime',
+  'search',
+  'new',
+  'languages',
+  'kids',
+  'mylist',
+  'latest',
+  'terms',
+  'terms-of-use',
 ];
 
 const urls = routes.map((r) => ({

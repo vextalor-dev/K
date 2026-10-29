@@ -94,7 +94,9 @@
   font-weight: 600;
   color: var(--text);
   margin-top: 8px;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .np-notify:hover {
@@ -290,7 +292,7 @@ h1.detail-title {
 }
 
 .detail-section-title::before {
-  content: "";
+  content: '';
   width: 3px;
   height: 18px;
   background: var(--primary);
@@ -433,7 +435,7 @@ h1.detail-title {
   color: #9aa2af;
 }
 
-.report-level[data-level="error"] {
+.report-level[data-level='error'] {
   background: rgba(220, 38, 38, 0.15);
   color: #f87171;
 }

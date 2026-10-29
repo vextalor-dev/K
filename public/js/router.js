@@ -10,7 +10,7 @@ export function normalizePath() {
     return hash.replace(/^#\/?/, '');
   }
   // 2. History mode: /title/movie/123  /browse/28  /search?q=foo
-  let p = location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+  const p = location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
   const search = new URLSearchParams(location.search);
   // /title/:type/:id  -> title:type:id
   if (p.startsWith('title/')) {
@@ -28,7 +28,8 @@ export function normalizePath() {
       return `browse=${id}&title=${encodeURIComponent(title)}`;
     }
     // legacy /browse?genre=28 fallback
-    if (search.get('genre')) return `browse=${search.get('genre')}&title=${encodeURIComponent(search.get('title') || '')}`;
+    if (search.get('genre'))
+      return `browse=${search.get('genre')}&title=${encodeURIComponent(search.get('title') || '')}`;
   }
   // /search?q=foo -> search=foo
   if (p === 'search' || p.startsWith('search')) {
@@ -78,10 +79,16 @@ export function watchNavigate(fn) {
 
 // Update <link rel="canonical"> + <meta property="og:url"> dynamically
 export function setCanonical(pathname) {
-  const base = (document.querySelector('link[rel="canonical"]')?.href || location.origin + '/').replace(/\/$/, '');
+  const base = (
+    document.querySelector('link[rel="canonical"]')?.href || location.origin + '/'
+  ).replace(/\/$/, '');
   const url = `${base}${pathname.startsWith('/') ? pathname : '/' + pathname}`;
   let link = document.querySelector('link[rel="canonical"]');
-  if (!link) { link = document.createElement('link'); link.rel = 'canonical'; document.head.appendChild(link); }
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'canonical';
+    document.head.appendChild(link);
+  }
   link.href = url;
   document.querySelectorAll('meta[property="og:url"]').forEach((m) => (m.content = url));
 }

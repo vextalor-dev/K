@@ -20,10 +20,14 @@ function highlight(text, q) {
   const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   if (!escaped) return esc(s);
   const re = new RegExp(`(${escaped})`, 'ig');
-  return s.split(re).map(part => {
-    if (part && part.toLowerCase() === t.toLowerCase()) return `<mark class="hl">${esc(part)}</mark>`;
-    return esc(part);
-  }).join('');
+  return s
+    .split(re)
+    .map((part) => {
+      if (part && part.toLowerCase() === t.toLowerCase())
+        return `<mark class="hl">${esc(part)}</mark>`;
+      return esc(part);
+    })
+    .join('');
 }
 
 export function renderSearch(root, query = '') {
@@ -43,9 +47,14 @@ export function renderSearch(root, query = '') {
   const content = $('#search-content', root);
   const sectionTitle = $('#search-section-title', root);
 
-  clearBtn.style.display = (input.value || query) ? '' : 'none';
+  clearBtn.style.display = input.value || query ? '' : 'none';
 
-  clearBtn.addEventListener('click', () => { input.value = ''; clearBtn.style.display = 'none'; input.focus(); handleSearch(''); });
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    clearBtn.style.display = 'none';
+    input.focus();
+    handleSearch('');
+  });
 
   input.addEventListener('input', () => {
     clearBtn.style.display = input.value ? '' : 'none';
@@ -81,9 +90,10 @@ export function renderSearch(root, query = '') {
     }
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
     e.preventDefault();
-    const next = e.key === 'ArrowDown'
-      ? (idx + 1) % results.length
-      : (idx - 1 + results.length) % results.length;
+    const next =
+      e.key === 'ArrowDown'
+        ? (idx + 1) % results.length
+        : (idx - 1 + results.length) % results.length;
     results[next].focus();
   });
 
@@ -102,7 +112,7 @@ async function loadTopSearches(content, sectionTitle) {
   try {
     const data = await api.trending('all', 'week');
     if (seq !== reqSeq) return;
-    const items = (data.results || []).filter(i => i.poster_path || i.backdrop_path).slice(0, 12);
+    const items = (data.results || []).filter((i) => i.poster_path || i.backdrop_path).slice(0, 12);
 
     content.innerHTML = '<div class="top-searches"></div>';
     const container = $('.top-searches', content);
@@ -112,7 +122,9 @@ async function loadTopSearches(content, sectionTitle) {
       const title = titleOf(item);
       const thumb = item.backdrop_path
         ? `https://image.tmdb.org/t/p/w300${item.backdrop_path}`
-        : item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : null;
+        : item.poster_path
+          ? `https://image.tmdb.org/t/p/w300${item.poster_path}`
+          : null;
 
       const row = document.createElement('div');
       row.className = 'top-search-row';
@@ -132,7 +144,9 @@ async function loadTopSearches(content, sectionTitle) {
 
       const open = () => openDetail(type, item.id);
       row.addEventListener('click', open);
-      row.addEventListener('keydown', (e) => { if (e.key === 'Enter') open(); });
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') open();
+      });
       container.appendChild(row);
     });
   } catch {
@@ -150,14 +164,20 @@ const doSearch = debounce(async (root, content, sectionTitle, q) => {
   }
 
   sectionTitle.textContent = 'Search Results';
-  content.innerHTML = '<div class="grid grid-skeleton">' +
-    Array.from({ length: 12 }, () => '<div class="card-skeleton" aria-hidden="true" tabindex="-1"></div>').join('') +
+  content.innerHTML =
+    '<div class="grid grid-skeleton">' +
+    Array.from(
+      { length: 12 },
+      () => '<div class="card-skeleton" aria-hidden="true" tabindex="-1"></div>'
+    ).join('') +
     '</div>';
 
   try {
     const data = await api.searchMulti(q);
     if (seq !== reqSeq) return;
-    const results = (data.results || []).filter(r => r.media_type !== 'person' && (r.poster_path || r.backdrop_path));
+    const results = (data.results || []).filter(
+      (r) => r.media_type !== 'person' && (r.poster_path || r.backdrop_path)
+    );
 
     if (!results.length) {
       if (seq !== reqSeq) return;
@@ -168,7 +188,7 @@ const doSearch = debounce(async (root, content, sectionTitle, q) => {
     content.innerHTML = '<div class="search-results"></div>';
     const grid = $('.search-results', content);
 
-    results.forEach(item => {
+    results.forEach((item) => {
       const type = mediaTypeOf(item);
       const title = titleOf(item);
       const img = item.backdrop_path
@@ -192,7 +212,9 @@ const doSearch = debounce(async (root, content, sectionTitle, q) => {
 
       const open = () => openDetail(type, item.id);
       card.addEventListener('click', open);
-      card.addEventListener('keydown', (e) => { if (e.key === 'Enter') open(); });
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') open();
+      });
       grid.appendChild(card);
     });
   } catch {

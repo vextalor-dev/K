@@ -33,7 +33,11 @@ let currentRoute = null;
 // Decode hash query values without crashing on malformed percent-encoding
 // (e.g. hand-edited URLs like "#/search=100%" or "#/browse=28&title=50%").
 const safeDecode = (s) => {
-  try { return decodeURIComponent(s); } catch { return s; }
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
 };
 
 // ---------------------------------------------------------------
@@ -67,11 +71,42 @@ function init() {
     const a = e.target.closest('a[href]');
     if (!a) return;
     const href = a.getAttribute('href');
-    if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return;
+    if (
+      !href ||
+      href.startsWith('http') ||
+      href.startsWith('mailto:') ||
+      href.startsWith('tel:') ||
+      href.startsWith('#')
+    )
+      return;
     // allow browser to handle /watch? etc normally but still SPA
-    if (href.startsWith('/watch') || href.startsWith('/title') || href.startsWith('/browse') || ['/','/movies','/tv','/anime','/search','/new','/languages','/kids','/mylist','/latest','/terms','/terms-of-use','/reports'].some((p) => href === p || href.startsWith(p + '?') || href.startsWith(p + '/'))) {
+    if (
+      href.startsWith('/watch') ||
+      href.startsWith('/title') ||
+      href.startsWith('/browse') ||
+      [
+        '/',
+        '/movies',
+        '/tv',
+        '/anime',
+        '/search',
+        '/new',
+        '/languages',
+        '/kids',
+        '/mylist',
+        '/latest',
+        '/terms',
+        '/terms-of-use',
+        '/reports',
+      ].some((p) => href === p || href.startsWith(p + '?') || href.startsWith(p + '/'))
+    ) {
       // only intercept same-origin
-      try { const url = new URL(href, location.origin); if (url.origin !== location.origin) return; } catch { return; }
+      try {
+        const url = new URL(href, location.origin);
+        if (url.origin !== location.origin) return;
+      } catch {
+        return;
+      }
       e.preventDefault();
       history.pushState(null, '', href);
       route();
@@ -90,7 +125,9 @@ async function route() {
     const legacy = location.hash.replace(/^#\/?/, '');
     if (legacy && !location.pathname.includes(legacy.split(':')[0])) {
       // one-time migration without adding history entry
-      try { history.replaceState(null, '', `/${legacy.split(':')[0].split('=')[0]}`); } catch {}
+      try {
+        history.replaceState(null, '', `/${legacy.split(':')[0].split('=')[0]}`);
+      } catch {}
     }
   }
 
@@ -219,7 +256,9 @@ async function route() {
   window.scrollTo(0, 0);
 
   // update canonical for SEO (history mode)
-  try { setCanonical(location.pathname + location.search); } catch {}
+  try {
+    setCanonical(location.pathname + location.search);
+  } catch {}
 
   // TV remote: focus the primary element for this route
   resetFocus();
@@ -230,7 +269,8 @@ async function route() {
 // ---------------------------------------------------------------
 async function renderHome() {
   const root = appRoot();
-  root.innerHTML = '<div id="hero-root"></div><div id="home-rows" class="layout-container" style="margin-top:-60px;position:relative;z-index:2"></div>';
+  root.innerHTML =
+    '<div id="hero-root"></div><div id="home-rows" class="layout-container" style="margin-top:-60px;position:relative;z-index:2"></div>';
 
   renderHero($('#hero-root', root));
   const rowsContainer = $('#home-rows', root);
@@ -240,7 +280,7 @@ async function renderHome() {
   if (cwItems.length) {
     buildRow(rowsContainer, {
       title: 'Continue Watching',
-      items: cwItems.map(cw => ({
+      items: cwItems.map((cw) => ({
         type: cw.type,
         id: cw.id,
         title: cw.title,
@@ -259,11 +299,19 @@ async function renderHome() {
   buildLikedRow(rowsContainer);
 
   // Trending
-  buildApiRow(rowsContainer, { title: 'Trending Now', promise: api.trending('all', 'week'), opts: { rank: true } });
+  buildApiRow(rowsContainer, {
+    title: 'Trending Now',
+    promise: api.trending('all', 'week'),
+    opts: { rank: true },
+  });
   // Popular Movies
   buildApiRow(rowsContainer, { title: 'Popular Movies', promise: api.movieList('popular') });
   // Top Rated
-  buildApiRow(rowsContainer, { title: 'Top Rated', promise: api.movieList('top_rated'), opts: { rank: true } });
+  buildApiRow(rowsContainer, {
+    title: 'Top Rated',
+    promise: api.movieList('top_rated'),
+    opts: { rank: true },
+  });
   // Now Playing
   buildApiRow(rowsContainer, { title: 'Now Playing', promise: api.movieList('now_playing') });
   // Upcoming
@@ -274,7 +322,7 @@ async function renderHome() {
   buildApiRow(rowsContainer, { title: 'On The Air', promise: api.tvList('on_the_air') });
   // A few genre rows
   const genreIds = [28, 35, 27, 18, 10749, 878];
-  genreIds.forEach(gid => {
+  genreIds.forEach((gid) => {
     const name = GENRE_MOODS[gid] || GENRES[gid] || 'Popular';
     buildApiRow(rowsContainer, {
       title: name,
@@ -288,7 +336,8 @@ async function renderHome() {
 // ---------------------------------------------------------------
 async function renderMovies() {
   const root = appRoot();
-  root.innerHTML = '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Movies</h1><div id="movies-content"></div></div></div>';
+  root.innerHTML =
+    '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Movies</h1><div id="movies-content"></div></div></div>';
   const content = $('#movies-content', root);
 
   // rows of movies
@@ -308,7 +357,8 @@ async function renderMovies() {
 // ---------------------------------------------------------------
 async function renderTV() {
   const root = appRoot();
-  root.innerHTML = '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">TV Shows</h1><div id="tv-content"></div></div></div>';
+  root.innerHTML =
+    '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">TV Shows</h1><div id="tv-content"></div></div></div>';
   const content = $('#tv-content', root);
 
   const rows = [
@@ -327,11 +377,12 @@ async function renderTV() {
 // ---------------------------------------------------------------
 async function renderAnime() {
   const root = appRoot();
-  root.innerHTML = '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Anime</h1><div id="anime-content"></div></div></div>';
+  root.innerHTML =
+    '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Anime</h1><div id="anime-content"></div></div></div>';
   const content = $('#anime-content', root);
 
   // load all anime items
-  const promises = ANIME_IDS.map(a => api.details('tv', a.id).catch(() => null));
+  const promises = ANIME_IDS.map((a) => api.details('tv', a.id).catch(() => null));
   const results = await Promise.all(promises);
   const valid = results.filter(Boolean);
 
@@ -380,10 +431,15 @@ function renderMyList() {
 // ---------------------------------------------------------------
 async function renderNewPopular() {
   const root = appRoot();
-  root.innerHTML = '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">New & Popular</h1><div id="np-content"></div></div></div>';
+  root.innerHTML =
+    '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">New & Popular</h1><div id="np-content"></div></div></div>';
   const content = $('#np-content', root);
 
-  buildApiRow(content, { title: 'Trending This Week', promise: api.trending('all', 'week'), opts: { rank: true } });
+  buildApiRow(content, {
+    title: 'Trending This Week',
+    promise: api.trending('all', 'week'),
+    opts: { rank: true },
+  });
   await renderNewReleases(content);
   buildApiRow(content, { title: 'Popular TV Shows', promise: api.tvList('popular') });
 }
@@ -391,17 +447,22 @@ async function renderNewPopular() {
 async function renderNewReleases(content) {
   const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   try {
-    const data = await api.discover('movie', { 'release_date.gte': since, sort_by: 'release_date.desc', include_adult: 'false' });
-    const items = (data.results || []).filter(i => i.poster_path || i.backdrop_path).slice(0, 12);
+    const data = await api.discover('movie', {
+      'release_date.gte': since,
+      sort_by: 'release_date.desc',
+      include_adult: 'false',
+    });
+    const items = (data.results || []).filter((i) => i.poster_path || i.backdrop_path).slice(0, 12);
     if (!items.length) return;
 
     const sec = document.createElement('section');
     sec.className = 'np-section';
-    sec.innerHTML = '<h2 class="row-title heading-trail">New This Week</h2><div class="np-coming-grid"></div>';
+    sec.innerHTML =
+      '<h2 class="row-title heading-trail">New This Week</h2><div class="np-coming-grid"></div>';
     content.appendChild(sec);
     const grid = $('.np-coming-grid', sec);
 
-    items.forEach(item => {
+    items.forEach((item) => {
       const t = titleOf(item);
       const badge = dateBadge(item.release_date);
       const on = isNotified(item.id);
@@ -418,8 +479,13 @@ async function renderNewReleases(content) {
         </div>
       `;
       const open = () => openDetail('movie', item.id);
-      el.addEventListener('click', (e) => { if (e.target.closest('.np-notify')) return; open(); });
-      el.addEventListener('keydown', (e) => { if (e.key === 'Enter') open(); });
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('.np-notify')) return;
+        open();
+      });
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') open();
+      });
       const btn = $('.np-notify', el);
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -431,20 +497,22 @@ async function renderNewReleases(content) {
       });
       grid.appendChild(el);
     });
-  } catch { /* row is optional */ }
+  } catch {
+    /* row is optional */
+  }
 }
 
 async function buildLikedRow(rowsContainer) {
   const liked = likedItems().slice(0, 3);
   if (!liked.length) return;
   try {
-    const lists = await Promise.all(liked.map(({ type, id }) =>
-      api.similar(type, id).catch(() => ({ results: [] }))
-    ));
+    const lists = await Promise.all(
+      liked.map(({ type, id }) => api.similar(type, id).catch(() => ({ results: [] })))
+    );
     const seen = new Set();
     const items = [];
     for (const list of lists) {
-      for (const r of (list.results || [])) {
+      for (const r of list.results || []) {
         const key = `${mediaTypeOf(r)}:${r.id}`;
         if (seen.has(key)) continue;
         seen.add(key);
@@ -454,7 +522,9 @@ async function buildLikedRow(rowsContainer) {
       if (items.length >= 10) break;
     }
     if (items.length) buildRow(rowsContainer, { title: 'Because You Liked', items });
-  } catch { /* row is optional */ }
+  } catch {
+    /* row is optional */
+  }
 }
 
 // ---------------------------------------------------------------
@@ -462,13 +532,17 @@ async function buildLikedRow(rowsContainer) {
 // ---------------------------------------------------------------
 async function renderLanguages() {
   const root = appRoot();
-  root.innerHTML = '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Languages</h1><div id="lang-content"></div></div></div>';
+  root.innerHTML =
+    '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Languages</h1><div id="lang-content"></div></div></div>';
   const content = $('#lang-content', root);
 
   for (const lang of LANGUAGES) {
     buildApiRow(content, {
       title: lang.label,
-      promise: api.discover(lang.media, { with_original_language: lang.code, sort_by: 'popularity.desc' }),
+      promise: api.discover(lang.media, {
+        with_original_language: lang.code,
+        sort_by: 'popularity.desc',
+      }),
       type: lang.media,
     });
   }
@@ -479,12 +553,27 @@ async function renderLanguages() {
 // ---------------------------------------------------------------
 async function renderKids() {
   const root = appRoot();
-  root.innerHTML = '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Kids</h1><div id="kids-content"></div></div></div>';
+  root.innerHTML =
+    '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Kids</h1><div id="kids-content"></div></div></div>';
   const content = $('#kids-content', root);
 
-  const kidsParams = { include_adult: 'false', certification_country: 'US', 'certification.lte': 'PG' };
-  buildApiRow(content, { title: 'Popular for Kids', promise: api.discover('movie', { with_genres: 10751, sort_by: 'popularity.desc', ...kidsParams }) });
-  buildApiRow(content, { title: 'Animation', promise: api.discover('movie', { with_genres: 16, sort_by: 'popularity.desc', ...kidsParams }) });
+  const kidsParams = {
+    include_adult: 'false',
+    certification_country: 'US',
+    'certification.lte': 'PG',
+  };
+  buildApiRow(content, {
+    title: 'Popular for Kids',
+    promise: api.discover('movie', {
+      with_genres: 10751,
+      sort_by: 'popularity.desc',
+      ...kidsParams,
+    }),
+  });
+  buildApiRow(content, {
+    title: 'Animation',
+    promise: api.discover('movie', { with_genres: 16, sort_by: 'popularity.desc', ...kidsParams }),
+  });
 }
 
 // ---------------------------------------------------------------
@@ -497,9 +586,12 @@ async function renderGenreBrowse(genreId, genreName) {
 
   try {
     const data = await api.discover('movie', { with_genres: genreId, sort_by: 'popularity.desc' });
-    const items = (data.results || []).filter(i => i.poster_path);
+    const items = (data.results || []).filter((i) => i.poster_path);
 
-    const { page, grid, empty } = buildGrid(content, { items, emptyMsg: `No ${genreName} titles found.` });
+    const { page, grid, empty } = buildGrid(content, {
+      items,
+      emptyMsg: `No ${genreName} titles found.`,
+    });
   } catch {
     content.innerHTML = '<div class="search-none">Failed to load titles.</div>';
   }
@@ -510,7 +602,8 @@ async function renderGenreBrowse(genreId, genreName) {
 // ---------------------------------------------------------------
 async function renderLatest() {
   const root = appRoot();
-  root.innerHTML = '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Latest</h1><div id="latest-content"></div></div></div>';
+  root.innerHTML =
+    '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Latest</h1><div id="latest-content"></div></div></div>';
   const content = $('#latest-content', root);
 
   buildApiRow(content, { title: 'Latest Movies', promise: api.movieList('now_playing') });
@@ -522,7 +615,8 @@ async function renderLatest() {
 // ---------------------------------------------------------------
 async function renderReports() {
   const root = appRoot();
-  root.innerHTML = '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Error Reports</h1><div id="reports-content"></div></div></div>';
+  root.innerHTML =
+    '<div class="grid-page"><div class="layout-container"><h1 class="grid-page-title heading-trail">Error Reports</h1><div id="reports-content"></div></div></div>';
   const content = $('#reports-content', root);
   try {
     const res = await fetch('/api/user/reports?limit=100');
@@ -532,7 +626,9 @@ async function renderReports() {
       content.innerHTML = '<div class="search-none">No reports yet.</div>';
       return;
     }
-    content.innerHTML = list.map((r) => `
+    content.innerHTML = list
+      .map(
+        (r) => `
       <div class="report-item">
         <div class="report-head">
           <span class="report-time">${new Date(r.ts).toLocaleString()}</span>
@@ -543,7 +639,9 @@ async function renderReports() {
         <div class="report-meta">${esc(r.url || '')}</div>
         ${r.detail ? `<pre class="report-detail">${esc(r.detail)}</pre>` : ''}
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   } catch {
     content.innerHTML = '<div class="search-none">Failed to load reports.</div>';
   }

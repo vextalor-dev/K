@@ -1,72 +1,108 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#05070a">
-  <meta name="color-scheme" content="dark">
-  <meta name="robots" content="index, follow, max-image-preview:large">
-  <title>K - Watch Free Movies & TV Shows Online</title>
-  <meta name="description" content="Watch free movies and TV shows online in HD on K. Stream the latest films, series and anime for free on K, no signup required.">
-  <link rel="canonical" href="https://k-movies.jo3.org/">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://k-movies.jo3.org/">
-  <meta property="og:title" content="K - Watch Free Movies & TV Shows Online">
-  <meta property="og:description" content="Watch free movies and TV shows online in HD on K. Stream the latest films, series and anime for free on K, no signup required.">
-  <meta property="og:image" content="https://k-movies.jo3.org/images/logo.svg">
-  <meta property="og:site_name" content="K">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="K - Watch Free Movies & TV Shows Online">
-  <meta name="twitter:description" content="Watch free movies and TV shows online in HD on K. Stream the latest films, series and anime for free on K, no signup required.">
-  <meta name="twitter:image" content="https://k-movies.jo3.org/images/logo.svg">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="icon" type="image/svg+xml" href="images/logo.svg">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://image.tmdb.org" crossorigin>
-  <link rel="dns-prefetch" href="https://image.tmdb.org">
-  <link rel="dns-prefetch" href="https://www.vidking.net">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/nav.css">
-  <link rel="stylesheet" href="css/hero.css">
-  <link rel="stylesheet" href="css/rows.css">
-  <link rel="stylesheet" href="css/card.css">
-  <link rel="stylesheet" href="css/modal.css">
-  <link rel="stylesheet" href="css/watch.css">
-  <link rel="stylesheet" href="css/search.css">
-  <link rel="stylesheet" href="css/footer.css">
-  <link rel="stylesheet" href="css/pages.css">
-  <link rel="stylesheet" href="css/legal.css">
-  <link rel="stylesheet" href="css/tv-controls.css">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "K",
-    "url": "https://k-movies.jo3.org/",
-    "potentialAction": { "@type": "SearchAction", "target": "https://k-movies.jo3.org/search?q={search_term_string}", "query-input": "required name=search_term_string" }
-  }
-  </script>
-  <script type="application/ld+json">
-  { "@context": "https://schema.org", "@type": "Organization", "name": "K", "url": "https://k-movies.jo3.org/", "logo": "https://k-movies.jo3.org/images/logo.svg" }
-  </script>
-</head>
-<body>
-  <header id="nav-root"></header>
-  <main id="app-root"></main>
-  <footer id="footer-root"></footer>
-  <div id="modal-root"></div>
-  <div id="watch-root" class="hidden"></div>
-  <div id="error-root" class="hidden"></div>
-  <noscript>
-    <div style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#05070a;color:#eef1f6;font-family:sans-serif;text-align:center;padding:24px">
-      K requires JavaScript to stream movies and TV shows. Please enable JavaScript and reload.
-    </div>
-  </noscript>
-  <script type="module" src="js/app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#05070a" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <title>K - Watch Free Movies & TV Shows Online</title>
+    <meta
+      name="description"
+      content="Watch free movies and TV shows online in HD on K. Stream the latest films, series and anime for free on K, no signup required."
+    />
+    <link rel="canonical" href="https://k-movies.jo3.org/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://k-movies.jo3.org/" />
+    <meta property="og:title" content="K - Watch Free Movies & TV Shows Online" />
+    <meta
+      property="og:description"
+      content="Watch free movies and TV shows online in HD on K. Stream the latest films, series and anime for free on K, no signup required."
+    />
+    <meta property="og:image" content="https://k-movies.jo3.org/images/logo.svg" />
+    <meta property="og:site_name" content="K" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="K - Watch Free Movies & TV Shows Online" />
+    <meta
+      name="twitter:description"
+      content="Watch free movies and TV shows online in HD on K. Stream the latest films, series and anime for free on K, no signup required."
+    />
+    <meta name="twitter:image" content="https://k-movies.jo3.org/images/logo.svg" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/svg+xml" href="images/logo.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://image.tmdb.org" crossorigin />
+    <link rel="dns-prefetch" href="https://image.tmdb.org" />
+    <link rel="dns-prefetch" href="https://www.vidking.net" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/nav.css" />
+    <link rel="stylesheet" href="css/hero.css" />
+    <link rel="stylesheet" href="css/rows.css" />
+    <link rel="stylesheet" href="css/card.css" />
+    <link rel="stylesheet" href="css/modal.css" />
+    <link rel="stylesheet" href="css/watch.css" />
+    <link rel="stylesheet" href="css/search.css" />
+    <link rel="stylesheet" href="css/footer.css" />
+    <link rel="stylesheet" href="css/pages.css" />
+    <link rel="stylesheet" href="css/legal.css" />
+    <link rel="stylesheet" href="css/tv-controls.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "K",
+        "url": "https://k-movies.jo3.org/",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://k-movies.jo3.org/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "K",
+        "url": "https://k-movies.jo3.org/",
+        "logo": "https://k-movies.jo3.org/images/logo.svg"
+      }
+    </script>
+  </head>
+  <body>
+    <header id="nav-root"></header>
+    <main id="app-root"></main>
+    <footer id="footer-root"></footer>
+    <div id="modal-root"></div>
+    <div id="watch-root" class="hidden"></div>
+    <div id="error-root" class="hidden"></div>
+    <noscript>
+      <div
+        style="
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #05070a;
+          color: #eef1f6;
+          font-family: sans-serif;
+          text-align: center;
+          padding: 24px;
+        "
+      >
+        K requires JavaScript to stream movies and TV shows. Please enable JavaScript and reload.
+      </div>
+    </noscript>
+    <script type="module" src="js/app.js"></script>
+  </body>
 </html>

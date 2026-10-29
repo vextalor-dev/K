@@ -73,7 +73,7 @@ jobs:
         with:
           tag_name: tv-apk-v${{ github.run_number }}
           name: K TV APK v${{ github.run_number }}
-          body: "Automated TV APK build from ${{ github.sha }}"
+          body: 'Automated TV APK build from ${{ github.sha }}'
           files: tv-app/app/build/outputs/apk/release/*.apk
           generate_release_notes: true
         env:

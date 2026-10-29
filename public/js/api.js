@@ -47,7 +47,7 @@ export async function fetchTMDB(path, params = {}) {
 
   // 1. Try server-side proxy
   try {
-    let res = await fetch(`/api/tmdb/${path}?${qs.toString()}`);
+    const res = await fetch(`/api/tmdb/${path}?${qs.toString()}`);
     const ctype = res.headers.get('content-type') || '';
 
     // If server returned HTML (e.g. SPA fallback index.html), proxy is not responding
@@ -58,8 +58,13 @@ export async function fetchTMDB(path, params = {}) {
       data = await res.json();
     } else {
       let errBody;
-      try { errBody = await res.json(); } catch {}
-      if (res.status === 500 && (errBody?.error?.includes('TMDB_API_KEY') || errBody?.message?.includes('TMDB_API_KEY'))) {
+      try {
+        errBody = await res.json();
+      } catch {}
+      if (
+        res.status === 500 &&
+        (errBody?.error?.includes('TMDB_API_KEY') || errBody?.message?.includes('TMDB_API_KEY'))
+      ) {
         errorReason = 'TMDB_API_KEY is not configured on server';
       } else {
         errorReason = `Proxy returned ${res.status}`;
@@ -122,15 +127,13 @@ let genreMapPromise = null;
 export const loadGenres = () => {
   if (!genreMapPromise) {
     genreMapPromise = Promise.all([fetchTMDB('genre/movie/list'), fetchTMDB('genre/tv/list')])
-      .then(
-        ([m, t]) => {
-          const map = {};
-          [...(m.genres || []), ...(t.genres || [])].forEach((g) => {
-            if (g.id && g.name && !map[g.id]) map[g.id] = g.name;
-          });
-          return map;
-        }
-      )
+      .then(([m, t]) => {
+        const map = {};
+        [...(m.genres || []), ...(t.genres || [])].forEach((g) => {
+          if (g.id && g.name && !map[g.id]) map[g.id] = g.name;
+        });
+        return map;
+      })
       .catch((err) => {
         // don't cache a permanent failure — let the next caller retry
         genreMapPromise = null;
@@ -140,8 +143,7 @@ export const loadGenres = () => {
   return genreMapPromise;
 };
 
-export const genreNames = (ids = [], map = {}) =>
-  ids.map((id) => map[id]).filter(Boolean);
+export const genreNames = (ids = [], map = {}) => ids.map((id) => map[id]).filter(Boolean);
 
 // Find the YouTube trailer key for a title (cache-friendly)
 export const trailerKey = async (type, id) => {

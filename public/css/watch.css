@@ -308,7 +308,7 @@ body.watch-mode .dock-outer {
 }
 
 .watch-section-title::before {
-  content: "";
+  content: '';
   width: 3px;
   height: 18px;
   background: var(--primary);

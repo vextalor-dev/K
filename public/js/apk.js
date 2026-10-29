@@ -16,7 +16,7 @@ async function fileFingerprint() {
     if (!res.ok) return null;
     const len = res.headers.get('Content-Length') || '';
     const lm = res.headers.get('Last-Modified') || '';
-    return (len + ':' + lm) || null;
+    return len + ':' + lm || null;
   } catch {
     return null;
   }
@@ -51,9 +51,11 @@ function showBanner(saved) {
       <div class="apk-banner-body">
         <div class="apk-banner-title">K TV App ${saved ? 'saved' : 'available'}</div>
         <div class="apk-banner-text">
-          ${saved
-            ? `Saved to <b>${APK.savePath}</b> (Downloads). Open Files &rarr; Downloads to install.`
-            : 'Install the K TV app on this device.'}
+          ${
+            saved
+              ? `Saved to <b>${APK.savePath}</b> (Downloads). Open Files &rarr; Downloads to install.`
+              : 'Install the K TV app on this device.'
+          }
         </div>
         <div class="apk-banner-actions">
           <button type="button" class="apk-btn" id="k-apk-dl">${saved ? 'Download again' : 'Download'}</button>
@@ -84,7 +86,9 @@ export async function maybeOfferApk() {
 
   if (!saved) {
     triggerDownload(APK.url);
-    try { localStorage.setItem(STORE_KEY(fp), '1'); } catch {}
+    try {
+      localStorage.setItem(STORE_KEY(fp), '1');
+    } catch {}
   }
   showBanner(saved);
 }

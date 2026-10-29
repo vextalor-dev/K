@@ -29,7 +29,7 @@ function enterTvMode() {
   if (!isTvMode()) {
     document.body.classList.add('tv-mode');
     // autofocus steals focus from D-pad navigation on TV
-    $$('[autofocus]').forEach(el => el.removeAttribute('autofocus'));
+    $$('[autofocus]').forEach((el) => el.removeAttribute('autofocus'));
   }
 }
 
@@ -39,7 +39,9 @@ function exitTvMode() {
 
 function detectTv() {
   const ua = (navigator.userAgent || '').toLowerCase();
-  return /(android tv|googletv|smart[- ]?tv|tizen|web0s|netcast|roku|apple ?tv|crkey|bravia)/.test(ua);
+  return /(android tv|googletv|smart[- ]?tv|tizen|web0s|netcast|roku|apple ?tv|crkey|bravia)/.test(
+    ua
+  );
 }
 
 // ---------------------------------------------------------------
@@ -65,16 +67,20 @@ function isVisible(el) {
 
 function candidates() {
   return $$(CANDIDATE_SEL)
-    .filter(el => el.tagName !== 'INPUT')
+    .filter((el) => el.tagName !== 'INPUT')
     .filter(isVisible)
-    .filter(el => el !== document.activeElement);
+    .filter((el) => el !== document.activeElement);
 }
 
 function rectOf(el) {
   const r = el.getBoundingClientRect();
   return {
-    left: r.left, right: r.right, top: r.top, bottom: r.bottom,
-    cx: r.left + r.width / 2, cy: r.top + r.height / 2,
+    left: r.left,
+    right: r.right,
+    top: r.top,
+    bottom: r.bottom,
+    cx: r.left + r.width / 2,
+    cy: r.top + r.height / 2,
   };
 }
 
@@ -91,21 +97,44 @@ function spatialMove(dir, from) {
     if (dir === 'right') {
       if (r.right <= cur.right) continue;
       const overlap = Math.max(0, Math.min(r.bottom, cur.bottom) - Math.max(r.top, cur.top));
-      score = (r.left - cur.right) + (overlap > 0 ? 0 : Math.min(Math.abs(r.top - cur.top), Math.abs(r.bottom - cur.bottom)) * 4);
+      score =
+        r.left -
+        cur.right +
+        (overlap > 0
+          ? 0
+          : Math.min(Math.abs(r.top - cur.top), Math.abs(r.bottom - cur.bottom)) * 4);
     } else if (dir === 'left') {
       if (r.left >= cur.left) continue;
       const overlap = Math.max(0, Math.min(r.bottom, cur.bottom) - Math.max(r.top, cur.top));
-      score = (cur.left - r.right) + (overlap > 0 ? 0 : Math.min(Math.abs(r.top - cur.top), Math.abs(r.bottom - cur.bottom)) * 4);
+      score =
+        cur.left -
+        r.right +
+        (overlap > 0
+          ? 0
+          : Math.min(Math.abs(r.top - cur.top), Math.abs(r.bottom - cur.bottom)) * 4);
     } else if (dir === 'down') {
       if (r.bottom <= cur.bottom) continue;
       const overlap = Math.max(0, Math.min(r.right, cur.right) - Math.max(r.left, cur.left));
-      score = (r.top - cur.bottom) + (overlap > 0 ? 0 : Math.min(Math.abs(r.left - cur.left), Math.abs(r.right - cur.right)) * 4);
+      score =
+        r.top -
+        cur.bottom +
+        (overlap > 0
+          ? 0
+          : Math.min(Math.abs(r.left - cur.left), Math.abs(r.right - cur.right)) * 4);
     } else if (dir === 'up') {
       if (r.top >= cur.top) continue;
       const overlap = Math.max(0, Math.min(r.right, cur.right) - Math.max(r.left, cur.left));
-      score = (cur.top - r.bottom) + (overlap > 0 ? 0 : Math.min(Math.abs(r.left - cur.left), Math.abs(r.right - cur.right)) * 4);
+      score =
+        cur.top -
+        r.bottom +
+        (overlap > 0
+          ? 0
+          : Math.min(Math.abs(r.left - cur.left), Math.abs(r.right - cur.right)) * 4);
     }
-    if (score < bestScore) { bestScore = score; best = el; }
+    if (score < bestScore) {
+      bestScore = score;
+      best = el;
+    }
   }
   return best;
 }
@@ -126,7 +155,7 @@ function scrollToFit(el, dir) {
   if (!needV && !needH) return;
   try {
     el.scrollIntoView({
-      block: (dir === 'up' || dir === 'down') ? 'center' : needV ? 'center' : 'nearest',
+      block: dir === 'up' || dir === 'down' ? 'center' : needV ? 'center' : 'nearest',
       inline: 'center',
       behavior: 'smooth',
     });
@@ -154,20 +183,26 @@ function primaryEl() {
     const el = $(sel);
     if (el && isVisible(el)) return el;
   }
-  return candidates().find(el => el.closest('#app-root')) || null;
+  return candidates().find((el) => el.closest('#app-root')) || null;
 }
 
 export function resetFocus() {
   if (document.body.classList.contains('watch-mode')) return;
   if (!isTvMode()) return;
   const el = primaryEl();
-  if (el) { focusEl(el); return; }
+  if (el) {
+    focusEl(el);
+    return;
+  }
   // rows/pages render async — wait briefly for content
   const deadline = Date.now() + 2500;
   const tick = () => {
     if (Date.now() > deadline) return;
     const target = primaryEl();
-    if (target) { focusEl(target); return; }
+    if (target) {
+      focusEl(target);
+      return;
+    }
     setTimeout(tick, 100);
   };
   tick();
@@ -197,7 +232,10 @@ function handleArrow(dir, ae) {
   }
 
   const cur = document.activeElement;
-  if (!cur || cur === document.body) { resetFocus(); return; }
+  if (!cur || cur === document.body) {
+    resetFocus();
+    return;
+  }
 
   const target = spatialMove(dir, cur);
   if (target) focusEl(target, dir);
@@ -231,17 +269,27 @@ function handleWatchArrow(dir, ae) {
 
   if (!ae || !isWatchControl(ae)) {
     // video focus mode: Left/Right seek, Up/Down enter controls
-    if (dir === 'left') { playerSeek(-10); return; }
-    if (dir === 'right') { playerSeek(10); return; }
-    const first = dir === 'down'
-      ? ($('.watch-transport .watch-seek-back') || $('.watch-back'))
-      : $('.watch-back');
+    if (dir === 'left') {
+      playerSeek(-10);
+      return;
+    }
+    if (dir === 'right') {
+      playerSeek(10);
+      return;
+    }
+    const first =
+      dir === 'down'
+        ? $('.watch-transport .watch-seek-back') || $('.watch-back')
+        : $('.watch-back');
     if (first) focusEl(first, dir);
     return;
   }
 
   const target = spatialMove(dir, ae);
-  if (target) { focusEl(target, dir); return; }
+  if (target) {
+    focusEl(target, dir);
+    return;
+  }
   hideWatchControls();
 }
 
@@ -251,7 +299,10 @@ function handleWatchArrow(dir, ae) {
 function back() {
   if (document.querySelector('.mobile-menu.open')) {
     const ham = document.querySelector('.hamburger-btn');
-    if (ham) { ham.click(); return; }
+    if (ham) {
+      ham.click();
+      return;
+    }
   }
   const open = document.querySelector(
     '.modal-overlay, .browse-dropdown.open, .search-drop.open, .search-box.open'
@@ -279,23 +330,34 @@ export function initTvControls() {
   const tvDevice = detectTv() || forceTv;
   if (tvDevice) {
     document.body.classList.add('tv-mode');
-    $$('[autofocus]').forEach(el => el.removeAttribute('autofocus'));
+    $$('[autofocus]').forEach((el) => el.removeAttribute('autofocus'));
   }
 
-  const markPointer = () => { sawPointer = true; };
+  const markPointer = () => {
+    sawPointer = true;
+  };
   // On a real TV device, remotes/WebViews can synthesize mousedown for the OK
   // button — exiting TV mode there would kill D-pad navigation on first press.
-  const exitTvOnPointer = () => { sawPointer = true; if (!tvDevice) exitTvMode(); };
+  const exitTvOnPointer = () => {
+    sawPointer = true;
+    if (!tvDevice) exitTvMode();
+  };
   document.addEventListener('mousedown', exitTvOnPointer);
   document.addEventListener('touchstart', exitTvOnPointer, { passive: true });
   document.addEventListener('mousemove', markPointer, { passive: true });
 
   document.addEventListener('keydown', (e) => {
     const ae = document.activeElement;
-    const inText = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
+    const inText =
+      ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
     const inField = inText || (ae && ae.tagName === 'SELECT');
 
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    if (
+      e.key === 'ArrowDown' ||
+      e.key === 'ArrowUp' ||
+      e.key === 'ArrowLeft' ||
+      e.key === 'ArrowRight'
+    ) {
       const dir = e.key.slice(5).toLowerCase();
       if (inField) {
         // On TV, arrows leave text fields and take over navigation;
@@ -326,7 +388,12 @@ export function initTvControls() {
     }
 
     if (isTvMode() || document.body.classList.contains('watch-mode')) {
-      if (e.key === 'Back' || e.key === 'Backspace' || e.key === 'BrowserBack' || e.code === 'GoBack') {
+      if (
+        e.key === 'Back' ||
+        e.key === 'Backspace' ||
+        e.key === 'BrowserBack' ||
+        e.code === 'GoBack'
+      ) {
         if (inField) return;
         e.preventDefault();
         back();
@@ -335,8 +402,14 @@ export function initTvControls() {
     }
 
     if (document.body.classList.contains('watch-mode')) {
-      if (e.key === 'MediaRewind' || e.code === 'MediaRewind') { e.preventDefault(); playerSeek(-10); }
-      if (e.key === 'MediaFastForward' || e.code === 'MediaFastForward') { e.preventDefault(); playerSeek(10); }
+      if (e.key === 'MediaRewind' || e.code === 'MediaRewind') {
+        e.preventDefault();
+        playerSeek(-10);
+      }
+      if (e.key === 'MediaFastForward' || e.code === 'MediaFastForward') {
+        e.preventDefault();
+        playerSeek(10);
+      }
     }
   });
 }

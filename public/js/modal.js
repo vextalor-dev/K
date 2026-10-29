@@ -3,7 +3,18 @@
 // Glass modal overlay with trailer, cast, episodes
 // ============================================================
 
-import { $, $$, esc, icon, matchPct, yearOf, titleOf, mediaTypeOf, hms, formatDate } from './utils.js';
+import {
+  $,
+  $$,
+  esc,
+  icon,
+  matchPct,
+  yearOf,
+  titleOf,
+  mediaTypeOf,
+  hms,
+  formatDate,
+} from './utils.js';
 import * as api from './api.js';
 import { detailFor, openWatch, openDetail } from './card.js';
 import { inList, toggle as toggleList, getReaction, setReaction } from './mylist.js';
@@ -18,17 +29,22 @@ export function openModal({ type, id, onClose } = {}) {
 
   overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
-  overlay.innerHTML = '<div class="modal-panel"><div class="spinner-wrap"><div class="spinner"></div></div></div>';
+  overlay.innerHTML =
+    '<div class="modal-panel"><div class="spinner-wrap"><div class="spinner"></div></div></div>';
   document.getElementById('modal-root').appendChild(overlay);
 
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
   document.addEventListener('keydown', escHandler);
   document.body.style.overflow = 'hidden';
 
   loadContent(type, id);
 }
 
-function escHandler(e) { if (e.key === 'Escape') close(); }
+function escHandler(e) {
+  if (e.key === 'Escape') close();
+}
 
 export function close() {
   if (!overlay) return;
@@ -68,7 +84,7 @@ async function loadContent(type, id) {
           <span class="meta-rating">${rating}% Match</span>
           <span>${year}</span>
           ${runtime ? `<span>${runtime}</span>` : ''}
-          ${genreNames.map(g => `<span>${esc(g)}</span>`).join('')}
+          ${genreNames.map((g) => `<span>${esc(g)}</span>`).join('')}
         </div>
         <div class="modal-buttons">
           <button class="btn btn-play modal-play">${icon('play')} Play</button>
@@ -77,17 +93,26 @@ async function loadContent(type, id) {
           <button class="btn btn-icon modal-dislike" aria-label="Dislike">${icon('dislike')}</button>
         </div>
         <p class="modal-desc">${esc(det.overview || '')}</p>
-        ${(cred.cast || []).length ? `
+        ${
+          (cred.cast || []).length
+            ? `
           <div class="modal-cast">
-            ${cred.cast.slice(0, 8).map(c => `
+            ${cred.cast
+              .slice(0, 8)
+              .map(
+                (c) => `
               <div class="cast-member">
                 <div class="cast-avatar">${c.profile_path ? `<img src="https://image.tmdb.org/t/p/w185${c.profile_path}" alt="${esc(c.name)}" loading="lazy">` : `<div class="cast-avatar-placeholder">${icon('film')}</div>`}</div>
                 <div class="cast-name">${esc(c.name)}</div>
                 <div class="cast-role">${esc(c.character || '')}</div>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
-        ` : ''}
+        `
+            : ''
+        }
         ${type === 'tv' ? `<div class="modal-seasons"></div>` : ''}
       </div>
     `;
@@ -111,17 +136,25 @@ async function loadContent(type, id) {
 
     const btnList = $('.modal-list', panel);
     refreshListBtn(btnList, id, type);
-    btnList.addEventListener('click', () => { toggleList({ id, type, ...det }); refreshListBtn(btnList, id, type); });
+    btnList.addEventListener('click', () => {
+      toggleList({ id, type, ...det });
+      refreshListBtn(btnList, id, type);
+    });
 
     const btnLike = $('.modal-like', panel);
     const btnDislike = $('.modal-dislike', panel);
     refreshReactionBtns(btnLike, btnDislike, id, type);
-    btnLike.addEventListener('click', () => { setReaction(id, type, getReaction(id, type) === 'like' ? null : 'like'); refreshReactionBtns(btnLike, btnDislike, id, type); });
-    btnDislike.addEventListener('click', () => { setReaction(id, type, getReaction(id, type) === 'dislike' ? null : 'dislike'); refreshReactionBtns(btnLike, btnDislike, id, type); });
+    btnLike.addEventListener('click', () => {
+      setReaction(id, type, getReaction(id, type) === 'like' ? null : 'like');
+      refreshReactionBtns(btnLike, btnDislike, id, type);
+    });
+    btnDislike.addEventListener('click', () => {
+      setReaction(id, type, getReaction(id, type) === 'dislike' ? null : 'dislike');
+      refreshReactionBtns(btnLike, btnDislike, id, type);
+    });
 
     // load episodes for TV
     if (type === 'tv') loadSeasons(panel, det);
-
   } catch {
     close();
   }
@@ -167,7 +200,10 @@ async function loadEpisodes(listEl, tvId, seasonNum) {
   try {
     const data = await api.seasonInfo(tvId, seasonNum);
     const eps = data.episodes || [];
-    listEl.innerHTML = eps.map(ep => `
+    listEl.innerHTML =
+      eps
+        .map(
+          (ep) => `
       <div class="episode-row" data-ep="${ep.episode_number}" tabindex="0">
         <div class="ep-thumb">
           ${ep.still_path ? `<img src="https://image.tmdb.org/t/p/w300${ep.still_path}" alt="" loading="lazy">` : '<div class="card-fallback"></div>'}
@@ -182,16 +218,20 @@ async function loadEpisodes(listEl, tvId, seasonNum) {
           <p class="ep-overview">${esc(ep.overview || '')}</p>
         </div>
       </div>
-    `).join('') || '<div class="episode-empty">No episodes available.</div>';
+    `
+        )
+        .join('') || '<div class="episode-empty">No episodes available.</div>';
 
-    $$('.episode-row', listEl).forEach(row => {
+    $$('.episode-row', listEl).forEach((row) => {
       const play = () => {
         const ep = Number(row.dataset.ep);
         close();
         openWatch('tv', tvId, seasonNum, ep);
       };
       row.addEventListener('click', play);
-      row.addEventListener('keydown', (e) => { if (e.key === 'Enter') play(); });
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') play();
+      });
     });
   } catch {
     listEl.innerHTML = '<div class="episode-empty">Failed to load episodes.</div>';

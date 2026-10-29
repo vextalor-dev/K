@@ -41,12 +41,14 @@ export function renderNav() {
         <span class="logo-text">K</span>
       </a>
       <nav class="nav-links">
-        ${NAV_LINKS.map(l => `
+        ${NAV_LINKS.map(
+          (l) => `
           <a class="nav-link" href="${l.href}" data-hash="${l.hash}" data-href="${l.href}">
             ${icon(l.icon)}
             <span class="font-medium">${l.label}</span>
           </a>
-        `).join('')}
+        `
+        ).join('')}
         <div class="browse-wrap" style="position:relative">
           <button class="nav-browse" aria-expanded="false" aria-haspopup="true">
             ${icon('grid')}<span class="font-medium">Browse</span>
@@ -82,8 +84,9 @@ export function renderNav() {
 function buildBrowseDropdown() {
   const dd = $('.browse-dropdown');
   if (!dd) return;
-  dd.innerHTML = BROWSE_GENRES.map(g =>
-    `<a class="browse-item" href="/browse/${g.id}?title=${encodeURIComponent(g.label)}" data-hash="#/browse=${g.id}&title=${encodeURIComponent(g.label)}">
+  dd.innerHTML = BROWSE_GENRES.map(
+    (g) =>
+      `<a class="browse-item" href="/browse/${g.id}?title=${encodeURIComponent(g.label)}" data-hash="#/browse=${g.id}&title=${encodeURIComponent(g.label)}">
       <span>${g.label}</span>
     </a>`
   ).join('');
@@ -111,7 +114,8 @@ function bindScroll() {
       const nearTop = y <= HIDE_AFTER;
       const movingUp = y < lastY - SCROLL_DIR_EPS;
       const movingDown = y > lastY + SCROLL_DIR_EPS;
-      const overlayOpen = browseOpen ||
+      const overlayOpen =
+        browseOpen ||
         searchOpen ||
         (searchBox && searchBox.classList.contains('open')) ||
         (searchDrop && searchDrop.classList.contains('open')) ||
@@ -147,18 +151,27 @@ function bindScroll() {
 function bindSearch() {
   const input = searchInput;
   const drop = searchDrop;
-  const box = searchBox = $('.search-box');
+  const box = (searchBox = $('.search-box'));
   const btn = $('.nav-search-btn');
   const clear = $('.search-clear');
 
   btn.addEventListener('click', () => {
     searchOpen = !searchOpen;
     box.classList.toggle('open', searchOpen);
-    if (searchOpen) { showNav(); input.focus(); }
-    else { closeSearch(); }
+    if (searchOpen) {
+      showNav();
+      input.focus();
+    } else {
+      closeSearch();
+    }
   });
 
-  clear.addEventListener('click', () => { input.value = ''; input.focus(); updateSearchClear(); drop.classList.remove('open'); });
+  clear.addEventListener('click', () => {
+    input.value = '';
+    input.focus();
+    updateSearchClear();
+    drop.classList.remove('open');
+  });
 
   input.addEventListener('input', () => {
     updateSearchClear();
@@ -166,7 +179,9 @@ function bindSearch() {
   });
 
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeSearch(); }
+    if (e.key === 'Escape') {
+      closeSearch();
+    }
     if (e.key === 'Enter' && input.value.trim()) {
       const q = encodeURIComponent(input.value.trim());
       history.pushState(null, '', `/search?q=${q}`);
@@ -176,7 +191,8 @@ function bindSearch() {
   });
 
   document.addEventListener('click', (e) => {
-    if (!box.contains(e.target) && (searchOpen || searchDrop.classList.contains('open'))) closeSearch();
+    if (!box.contains(e.target) && (searchOpen || searchDrop.classList.contains('open')))
+      closeSearch();
   });
 
   document.addEventListener('keydown', (e) => {
@@ -195,7 +211,10 @@ function closeNavOverlays() {
     const dd = $('.browse-dropdown');
     const btn = $('.nav-browse');
     if (dd) dd.classList.remove('open');
-    if (btn) { btn.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+    if (btn) {
+      btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
   }
   if (searchOpen || (searchDrop && searchDrop.classList.contains('open'))) {
     closeSearch();
@@ -221,37 +240,50 @@ function updateSearchClear() {
 }
 
 const doNavSearch = debounce(async (q) => {
-  if (!q || q.length < 2) { searchDrop.classList.remove('open'); return; }
+  if (!q || q.length < 2) {
+    searchDrop.classList.remove('open');
+    return;
+  }
   const mine = q;
   const wasOpen = searchOpen;
   try {
     const data = await api.searchMulti(q);
     if (!searchInput || searchInput.value.trim() !== mine || !wasOpen) return;
-    const results = (data.results || []).filter(r => r.media_type !== 'person' && r.poster_path).slice(0, 6);
-    if (!results.length) { searchDrop.innerHTML = '<div class="drop-empty">No results found</div>'; }
-    else {
-      searchDrop.innerHTML = results.map(r => {
-        const t = r.title || r.name || '';
-        const yr = (r.release_date || r.first_air_date || '').slice(0, 4);
-        const poster = `https://image.tmdb.org/t/p/w92${r.poster_path}`;
-        return `<div class="drop-item" data-type="${r.media_type}" data-id="${r.id}">
+    const results = (data.results || [])
+      .filter((r) => r.media_type !== 'person' && r.poster_path)
+      .slice(0, 6);
+    if (!results.length) {
+      searchDrop.innerHTML = '<div class="drop-empty">No results found</div>';
+    } else {
+      searchDrop.innerHTML = results
+        .map((r) => {
+          const t = r.title || r.name || '';
+          const yr = (r.release_date || r.first_air_date || '').slice(0, 4);
+          const poster = `https://image.tmdb.org/t/p/w92${r.poster_path}`;
+          return `<div class="drop-item" data-type="${r.media_type}" data-id="${r.id}">
           <img src="${poster}" alt="" loading="lazy">
           <div class="drop-info">
             <div class="drop-title">${esc(t)}${yr ? ' (' + yr + ')' : ''}</div>
             <div class="drop-sub">${r.media_type}</div>
           </div>
         </div>`;
-      }).join('');
+        })
+        .join('');
     }
     searchDrop.classList.add('open');
-    $$('.drop-item', searchDrop).forEach(el => {
+    $$('.drop-item', searchDrop).forEach((el) => {
       el.addEventListener('click', () => {
         history.pushState(null, '', `/title/${el.dataset.type}/${el.dataset.id}`);
         window.dispatchEvent(new PopStateEvent('popstate'));
         closeSearch();
       });
     });
-  } catch { if (searchInput && searchInput.value.trim() === mine && searchOpen) { searchDrop.innerHTML = '<div class="drop-empty">Something went wrong</div>'; searchDrop.classList.add('open'); } }
+  } catch {
+    if (searchInput && searchInput.value.trim() === mine && searchOpen) {
+      searchDrop.innerHTML = '<div class="drop-empty">Something went wrong</div>';
+      searchDrop.classList.add('open');
+    }
+  }
 }, 220);
 
 function bindBrowse() {
@@ -287,7 +319,10 @@ function bindMobile() {
   let menuEl = null;
 
   ham.addEventListener('click', () => {
-    if (mobileOpen) { closeMobile(); return; }
+    if (mobileOpen) {
+      closeMobile();
+      return;
+    }
     mobileOpen = true;
     menuEl = document.createElement('div');
     menuEl.className = 'mobile-menu open';
@@ -297,9 +332,11 @@ function bindMobile() {
           <img src="images/logo.svg" alt="K" width="40" height="40">
           <span class="logo-text">K</span>
         </a>
-        ${NAV_LINKS.map(l => `
+        ${NAV_LINKS.map(
+          (l) => `
           <a class="mobile-menu-link" href="${l.href}">${icon(l.icon)} ${l.label}</a>
-        `).join('')}
+        `
+        ).join('')}
         <a class="mobile-menu-link" href="/anime">${icon('sparkles')} Anime</a>
         <a class="mobile-menu-link" href="/search">${icon('search')} Search</a>
         <a class="mobile-menu-link" href="/mylist">${icon('heart')} My List</a>
@@ -309,12 +346,15 @@ function bindMobile() {
     menuEl.addEventListener('click', (e) => {
       if (e.target === menuEl) closeMobile();
     });
-    $$('.mobile-menu-link', menuEl).forEach(link => link.addEventListener('click', closeMobile));
+    $$('.mobile-menu-link', menuEl).forEach((link) => link.addEventListener('click', closeMobile));
   });
 
   function closeMobile() {
     mobileOpen = false;
-    if (menuEl) { menuEl.remove(); menuEl = null; }
+    if (menuEl) {
+      menuEl.remove();
+      menuEl = null;
+    }
   }
 }
 
@@ -326,11 +366,13 @@ export function renderDock() {
   dock.className = 'dock-outer';
   dock.innerHTML = `
     <div class="dock-panel">
-      ${DOCK_ITEMS.map(d => `
+      ${DOCK_ITEMS.map(
+        (d) => `
         <a class="dock-item" href="${d.hash}" data-hash="${d.hash}" aria-label="${d.label}">
           ${icon(d.icon)}
         </a>
-      `).join('')}
+      `
+      ).join('')}
     </div>
   `;
   document.body.appendChild(dock);
@@ -338,10 +380,10 @@ export function renderDock() {
 
 export function setNavActive(route) {
   const hash = route ? `#/${route}` : null;
-  $$('.nav-link', navRoot()).forEach(a => {
+  $$('.nav-link', navRoot()).forEach((a) => {
     a.classList.toggle('active', !!hash && a.dataset.hash === hash);
   });
-  $$('.dock-item').forEach(a => {
+  $$('.dock-item').forEach((a) => {
     a.classList.toggle('active', !!hash && a.dataset.hash === hash);
   });
 }

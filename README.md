@@ -42,17 +42,17 @@
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| **TMDB Integration** | Movie & TV metadata, search, genres, trending + v4 Bearer token support |
-| **VidKing Player** | Streaming playback via embed URLs with progress resume |
-| **Responsive UI** | Hero carousel, content rows, search, detail pages, my list |
-| **TV-Optimized** | Keyboard/gamepad navigation, immersive fullscreen, watch progress |
-| **History Router** | Clean URLs (`/title/movie/123`, `/search?q=foo`), hash fallback for legacy links |
-| **Android TV App** | WebView wrapper with landscape lock, back-button handling |
-| **Rate Limiting** | Per-IP sliding window (150 req/min) + CDN cache (`s-maxage=3600`) |
-| **SEO & PWA** | `sitemap.xml`, `robots.txt`, `manifest.webmanifest`, canonical OG, SearchAction |
-| **One-Click Deploy** | Vercel + Cloudflare Pages ready, GitHub Releases for APK |
+| Feature              | Description                                                                      |
+| -------------------- | -------------------------------------------------------------------------------- |
+| **TMDB Integration** | Movie & TV metadata, search, genres, trending + v4 Bearer token support          |
+| **VidKing Player**   | Streaming playback via embed URLs with progress resume                           |
+| **Responsive UI**    | Hero carousel, content rows, search, detail pages, my list                       |
+| **TV-Optimized**     | Keyboard/gamepad navigation, immersive fullscreen, watch progress                |
+| **History Router**   | Clean URLs (`/title/movie/123`, `/search?q=foo`), hash fallback for legacy links |
+| **Android TV App**   | WebView wrapper with landscape lock, back-button handling                        |
+| **Rate Limiting**    | Per-IP sliding window (150 req/min) + CDN cache (`s-maxage=3600`)                |
+| **SEO & PWA**        | `sitemap.xml`, `robots.txt`, `manifest.webmanifest`, canonical OG, SearchAction  |
+| **One-Click Deploy** | Vercel + Cloudflare Pages ready, GitHub Releases for APK                         |
 
 ---
 
@@ -187,6 +187,5 @@ This project is licensed under the **GNU Affero General Public License v3.0** â€
 ---
 
 <div align="center">
-
 
 </div>

@@ -22,7 +22,9 @@
   font-weight: 600;
   padding: 14px 44px 14px 16px;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .search-page-input::placeholder {
@@ -55,7 +57,7 @@
 }
 
 .search-section-title::before {
-  content: "";
+  content: '';
   width: 3px;
   height: 18px;
   background: var(--primary);

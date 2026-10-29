@@ -43,8 +43,11 @@ async function loadHeroItems(gen) {
   try {
     const data = await api.trending('all', 'week');
     if (destroyed || gen !== generation) return;
-    items = (data.results || []).filter(i => i.backdrop_path && i.vote_average > 4.5).slice(0, 5);
-    if (!items.length) { root.innerHTML = ''; return; }
+    items = (data.results || []).filter((i) => i.backdrop_path && i.vote_average > 4.5).slice(0, 5);
+    if (!items.length) {
+      root.innerHTML = '';
+      return;
+    }
     build();
     startRotation();
   } catch {
@@ -86,7 +89,8 @@ function build() {
     const layer = document.createElement('div');
     layer.className = 'hero-layer' + (i === 0 ? ' active' : '');
     const src = backdropOf(item, 'w1280') || backdropOf(item, 'original');
-    const eager = i === 0 ? ' fetchpriority="high" decoding="async"' : ' loading="lazy" decoding="async"';
+    const eager =
+      i === 0 ? ' fetchpriority="high" decoding="async"' : ' loading="lazy" decoding="async"';
     layer.innerHTML = `<div class="hero-backdrop"><img src="${src}" alt="" draggable="false"${eager}></div>`;
     layers.appendChild(layer);
     if (i === 1) {
@@ -99,7 +103,9 @@ function build() {
 
   // pause rotation while hovering or focusing the hero
   const pause = () => stopRotation();
-  const resume = () => { if (!destroyed) startRotation(); };
+  const resume = () => {
+    if (!destroyed) startRotation();
+  };
   root.addEventListener('mouseenter', pause);
   root.addEventListener('mouseleave', resume);
   root.addEventListener('focusin', pause);
@@ -180,7 +186,10 @@ function startRotation() {
 }
 
 function stopRotation() {
-  if (timer) { clearInterval(timer); timer = null; }
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
 }
 
 export function destroy() {

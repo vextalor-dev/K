@@ -14,7 +14,9 @@ export async function renderDetail(root, type, id) {
   root.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
 
   const expectedPath = `/title/${type}/${id}`;
-  const stale = () => !location.pathname.startsWith(expectedPath) && location.hash !== `#/title:${type}:${id}` || !document.body.contains(root);
+  const stale = () =>
+    (!location.pathname.startsWith(expectedPath) && location.hash !== `#/title:${type}:${id}`) ||
+    !document.body.contains(root);
 
   try {
     const [det, cred, simData, tKey] = await Promise.all([
@@ -29,13 +31,19 @@ export async function renderDetail(root, type, id) {
     const genres = await api.loadGenres().catch(() => ({}));
     if (stale()) return;
 
-    const genreNames = api.genreNames((det.genres || []).map((g) => g.id), genres);
+    const genreNames = api.genreNames(
+      (det.genres || []).map((g) => g.id),
+      genres
+    );
     const title = titleOf(det);
     const year = yearOf(det);
     const rating = matchPct(det.vote_average);
-    const runtime = type === 'tv'
-      ? (det.episode_run_time?.[0] ? runtimeText({ runtime: det.episode_run_time[0] }) : null)
-      : runtimeText(det);
+    const runtime =
+      type === 'tv'
+        ? det.episode_run_time?.[0]
+          ? runtimeText({ runtime: det.episode_run_time[0] })
+          : null
+        : runtimeText(det);
     const typeLabel = type === 'tv' ? 'TV Show' : 'Movie';
 
     document.title = `${title}${year ? ` (${year})` : ''} · K`;
@@ -55,7 +63,7 @@ export async function renderDetail(root, type, id) {
               ${runtime ? `<span>${runtime}</span>` : ''}
               <span>${rating}% Match</span>
             </div>
-            ${genreNames.length ? `<div class="detail-genres">${genreNames.map(g => `<span class="detail-genre">${esc(g)}</span>`).join('')}</div>` : ''}
+            ${genreNames.length ? `<div class="detail-genres">${genreNames.map((g) => `<span class="detail-genre">${esc(g)}</span>`).join('')}</div>` : ''}
             <div class="detail-buttons">
               <button class="btn btn-play detail-play">${icon('play')} Play</button>
               ${tKey ? `<button class="btn btn-glass detail-trailer">${icon('play')} Trailer</button>` : ''}
@@ -69,20 +77,29 @@ export async function renderDetail(root, type, id) {
       </div>
       <div class="layout-container">
         ${type === 'tv' && det.number_of_seasons ? '<div class="detail-seasons"></div>' : ''}
-        ${(cred.cast || []).length ? `
+        ${
+          (cred.cast || []).length
+            ? `
           <div class="detail-section">
             <h2 class="detail-section-title heading-trail">Cast</h2>
             <div class="modal-cast">
-              ${cred.cast.slice(0, 10).map(c => `
+              ${cred.cast
+                .slice(0, 10)
+                .map(
+                  (c) => `
                 <div class="cast-member">
                   <div class="cast-avatar">${c.profile_path ? `<img src="https://image.tmdb.org/t/p/w185${c.profile_path}" alt="${esc(c.name)}" loading="lazy">` : `<div class="cast-avatar-placeholder">${icon('film')}</div>`}</div>
                   <div class="cast-name">${esc(c.name)}</div>
                   <div class="cast-role">${esc(c.character || '')}</div>
                 </div>
-              `).join('')}
+              `
+                )
+                .join('')}
             </div>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
         <div class="detail-similar-section"></div>
       </div>
     `;
@@ -105,16 +122,25 @@ export async function renderDetail(root, type, id) {
 
     const btnList = $('.detail-list', root);
     refreshListBtn(btnList, id, type);
-    btnList.addEventListener('click', () => { toggleList({ id, type, ...det }); refreshListBtn(btnList, id, type); });
+    btnList.addEventListener('click', () => {
+      toggleList({ id, type, ...det });
+      refreshListBtn(btnList, id, type);
+    });
 
     const btnLike = $('.detail-like', root);
     const btnDislike = $('.detail-dislike', root);
     refreshReactionBtns(btnLike, btnDislike, id, type);
-    btnLike.addEventListener('click', () => { setReaction(id, type, getReaction(id, type) === 'like' ? null : 'like'); refreshReactionBtns(btnLike, btnDislike, id, type); });
-    btnDislike.addEventListener('click', () => { setReaction(id, type, getReaction(id, type) === 'dislike' ? null : 'dislike'); refreshReactionBtns(btnLike, btnDislike, id, type); });
+    btnLike.addEventListener('click', () => {
+      setReaction(id, type, getReaction(id, type) === 'like' ? null : 'like');
+      refreshReactionBtns(btnLike, btnDislike, id, type);
+    });
+    btnDislike.addEventListener('click', () => {
+      setReaction(id, type, getReaction(id, type) === 'dislike' ? null : 'dislike');
+      refreshReactionBtns(btnLike, btnDislike, id, type);
+    });
 
     // similar titles row
-    const sims = (simData.results || []).filter(s => s.poster_path);
+    const sims = (simData.results || []).filter((s) => s.poster_path);
     if (sims.length) {
       const simSection = $('.detail-similar-section', root);
       buildRow(simSection, { title: 'More Like This', items: sims });
@@ -125,7 +151,6 @@ export async function renderDetail(root, type, id) {
       const seasonsEl = $('.detail-seasons', root);
       if (seasonsEl) loadSeasons(seasonsEl, det);
     }
-
   } catch {
     if (stale()) return;
     root.innerHTML = `
@@ -177,9 +202,11 @@ async function loadEpisodes(listEl, tvId, seasonNum, isCurrent) {
     const eps = data.episodes || [];
     const rec = readProgress('tv', tvId);
     const active = (s, e) => !!(rec && Number(rec.season) === s && Number(rec.episode) === e);
-    listEl.innerHTML = eps.map(ep => {
-      const nowPlaying = active(seasonNum, ep.episode_number);
-      return `
+    listEl.innerHTML =
+      eps
+        .map((ep) => {
+          const nowPlaying = active(seasonNum, ep.episode_number);
+          return `
       <div class="episode-row${nowPlaying ? ' playing' : ''}" data-season="${seasonNum}" data-ep="${ep.episode_number}" tabindex="0"${nowPlaying ? ' aria-current="true"' : ''}>
         <div class="ep-thumb">
           ${ep.still_path ? `<img src="https://image.tmdb.org/t/p/w300${ep.still_path}" alt="" loading="lazy">` : '<div class="card-fallback"></div>'}
@@ -196,16 +223,19 @@ async function loadEpisodes(listEl, tvId, seasonNum, isCurrent) {
         </div>
       </div>
     `;
-    }).join('') || '<div class="episode-empty">No episodes available.</div>';
+        })
+        .join('') || '<div class="episode-empty">No episodes available.</div>';
 
-    $$('.episode-row', listEl).forEach(row => {
+    $$('.episode-row', listEl).forEach((row) => {
       const play = () => {
         const s = Number(row.dataset.season);
         const ep = Number(row.dataset.ep);
         openWatch('tv', tvId, s, ep);
       };
       row.addEventListener('click', play);
-      row.addEventListener('keydown', (e) => { if (e.key === 'Enter') play(); });
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') play();
+      });
     });
   } catch {
     if (isCurrent()) listEl.innerHTML = '<div class="episode-empty">Failed to load episodes.</div>';
@@ -235,10 +265,15 @@ function openTrailer(key) {
     if (trigger && typeof trigger.focus === 'function' && trigger.isConnected) trigger.focus();
   };
   const onKey = (e) => {
-    if (e.key === 'Escape') { cleanup(); return; }
+    if (e.key === 'Escape') {
+      cleanup();
+      return;
+    }
     if (e.key === 'Tab') {
-      const focusables = $$('button, a[href], iframe, [tabindex]:not([tabindex="-1"])', panel)
-        .filter(el => !el.disabled);
+      const focusables = $$(
+        'button, a[href], iframe, [tabindex]:not([tabindex="-1"])',
+        panel
+      ).filter((el) => !el.disabled);
       if (!focusables.length) return;
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
@@ -251,7 +286,9 @@ function openTrailer(key) {
       }
     }
   };
-  ov.addEventListener('click', (e) => { if (e.target === ov) cleanup(); });
+  ov.addEventListener('click', (e) => {
+    if (e.target === ov) cleanup();
+  });
   ov.querySelector('.modal-close').addEventListener('click', cleanup);
   window.addEventListener('keydown', onKey);
   window.addEventListener('hashchange', cleanup);

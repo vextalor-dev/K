@@ -3,7 +3,9 @@ import { esc, matchPct, yearOf, titleOf, mediaTypeOf, clamp } from '../public/js
 
 describe('utils', () => {
   it('esc escapes html', () => {
-    expect(esc('<script>alert("x")</script>')).toBe('&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;');
+    expect(esc('<script>alert("x")</script>')).toBe(
+      '&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;'
+    );
     expect(esc(null)).toBe('');
   });
   it('matchPct clamps', () => {

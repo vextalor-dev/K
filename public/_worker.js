@@ -15,7 +15,10 @@ const hits = new Map();
 function isRateLimited(ip) {
   const now = Date.now();
   const arr = (hits.get(ip) || []).filter((t) => now - t < RATE_WINDOW);
-  if (arr.length >= RATE_LIMIT) { hits.set(ip, arr); return true; }
+  if (arr.length >= RATE_LIMIT) {
+    hits.set(ip, arr);
+    return true;
+  }
   arr.push(now);
   hits.set(ip, arr);
   if (hits.size > 5000) {
@@ -28,22 +31,25 @@ function isRateLimited(ip) {
 }
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env, _ctx) {
     const url = new URL(request.url);
 
     // Health check
     if (url.pathname === '/api/health') {
       const hasKey = !!(env.TMDB_API_KEY || env.TMDB_BEARER_TOKEN || env.TMDB_API_BEARER);
-      return new Response(JSON.stringify({
-        ok: true,
-        tmdb: hasKey,
-        platform: 'cloudflare-pages-worker'
-      }), {
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store'
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          tmdb: hasKey,
+          platform: 'cloudflare-pages-worker',
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+          },
         }
-      });
+      );
     }
 
     // TMDB API Proxy
@@ -51,7 +57,7 @@ export default {
       if (request.method !== 'GET') {
         return new Response(JSON.stringify({ error: 'Method not allowed' }), {
           status: 405,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         });
       }
 
@@ -59,32 +65,42 @@ export default {
       const TMDB_BEARER = env.TMDB_BEARER_TOKEN || env.TMDB_API_BEARER;
 
       if (!TMDB_API_KEY && !TMDB_BEARER) {
-        return new Response(JSON.stringify({
-          error: 'TMDB_API_KEY or TMDB_BEARER_TOKEN is not set.',
-          message: 'Please set TMDB_API_KEY in Cloudflare Pages -> Settings -> Environment Variables.'
-        }), {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store'
+        return new Response(
+          JSON.stringify({
+            error: 'TMDB_API_KEY or TMDB_BEARER_TOKEN is not set.',
+            message:
+              'Please set TMDB_API_KEY in Cloudflare Pages -> Settings -> Environment Variables.',
+          }),
+          {
+            status: 500,
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-store',
+            },
           }
-        });
+        );
       }
 
-      const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('x-forwarded-for') || 'unknown';
+      const ip =
+        request.headers.get('CF-Connecting-IP') ||
+        request.headers.get('x-forwarded-for') ||
+        'unknown';
       if (isRateLimited(ip.split(',')[0].trim())) {
         return new Response(JSON.stringify({ error: 'Too many requests. Try again shortly.' }), {
           status: 429,
-          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' }
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
         });
       }
 
-      let apiPath = url.pathname.replace(/^\/api\/tmdb\/?/, '').replace(/\/+$/, '');
+      const apiPath = url.pathname.replace(/^\/api\/tmdb\/?/, '').replace(/\/+$/, '');
       if (!apiPath || apiPath.length > 200 || apiPath.split('/').some((s) => s === '..')) {
-        return new Response(JSON.stringify({ error: 'Bad request: missing or invalid TMDB path.' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        });
+        return new Response(
+          JSON.stringify({ error: 'Bad request: missing or invalid TMDB path.' }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
       }
 
       const qs = new URLSearchParams(url.search);
@@ -103,8 +119,8 @@ export default {
         return new Response(JSON.stringify(hit.body), {
           headers: {
             'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400'
-          }
+            'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+          },
         });
       }
 
@@ -127,12 +143,15 @@ export default {
           return new Response(JSON.stringify(body), {
             headers: {
               'Content-Type': 'application/json',
-              'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400'
-            }
+              'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+            },
           });
         } catch (err) {
           lastError = err;
-          if (attempt === 0) { await sleep(600); continue; }
+          if (attempt === 0) {
+            await sleep(600);
+            continue;
+          }
           break;
         }
       }
@@ -140,17 +159,20 @@ export default {
       const stale = cache.get(cacheKey);
       if (stale) {
         return new Response(JSON.stringify(stale.body), {
-          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' },
         });
       }
 
-      return new Response(JSON.stringify({
-        error: 'TMDB upstream request failed',
-        detail: String((lastError && lastError.status) || lastError || 'network error')
-      }), {
-        status: 502,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(
+        JSON.stringify({
+          error: 'TMDB upstream request failed',
+          detail: String((lastError && lastError.status) || lastError || 'network error'),
+        }),
+        {
+          status: 502,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // Default: Serve static assets
@@ -159,5 +181,5 @@ export default {
     }
 
     return new Response('Not Found', { status: 404 });
-  }
+  },
 };
